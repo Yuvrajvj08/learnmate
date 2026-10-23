@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "secondary": "#0051d5",
+          "error": "#ba1a1a",
+          "on-surface": "#131b2e",
+          "tertiary": "#005952",
+          "on-tertiary": "#ffffff",
+          "surface-tint": "#732ee4",
+          "primary-fixed-dim": "#d2bbff",
+          "on-error": "#ffffff",
+          "on-error-container": "#93000a",
+          "tertiary-fixed-dim": "#6bd8cb",
+          "secondary-container": "#316bf3",
+          "on-secondary-fixed": "#00174b",
+          "on-primary-fixed": "#25005a",
+          "inverse-surface": "#283044",
+          "surface-bright": "#faf8ff",
+          "on-primary-fixed-variant": "#5a00c6",
+          "surface-container": "#eaedff",
+          "on-background": "#131b2e",
+          "secondary-fixed": "#dbe1ff",
+          "surface-dim": "#d2d9f4",
+          "on-secondary-fixed-variant": "#003ea8",
+          "surface": "#faf8ff",
+          "tertiary-fixed": "#89f5e7",
+          "background": "#faf8ff",
+          "primary": "#630ed4",
+          "surface-container-high": "#e2e7ff",
+          "on-primary-container": "#ede0ff",
+          "on-secondary": "#ffffff",
+          "primary-fixed": "#eaddff",
+          "primary-container": "#7c3aed",
+          "surface-container-lowest": "#ffffff",
+          "surface-container-low": "#f2f3ff",
+          "outline": "#7b7487",
+          "on-surface-variant": "#4a4455",
+          "inverse-on-surface": "#eef0ff",
+          "on-secondary-container": "#fefcff",
+          "on-tertiary-container": "#8df9ea",
+          "tertiary-container": "#00746a",
+          "surface-variant": "#dae2fd",
+          "secondary-fixed-dim": "#b4c5ff",
+          "error-container": "#ffdad6",
+          "on-primary": "#ffffff",
+          "on-tertiary-fixed-variant": "#005049",
+          "outline-variant": "#ccc3d8",
+          "on-tertiary-fixed": "#00201d",
+          "surface-container-highest": "#dae2fd",
+          "inverse-primary": "#d2bbff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.25rem",
+          "lg": "0.5rem",
+          "xl": "0.75rem",
+          "full": "9999px"
+        },
+        "spacing": {
+          "space-sm": "0.5rem",
+          "gutter-mobile": "1rem",
+          "gutter": "1.5rem",
+          "space-lg": "1.5rem",
+          "margin": "2rem",
+          "space-xs": "0.25rem",
+          "space-xl": "2.5rem",
+          "margin-mobile": "1rem",
+          "space-md": "1rem"
+        },
+        "fontFamily": {
+          "body-md": ["Inter"],
+          "headline-sm": ["Inter"],
+          "label-md": ["Inter"],
+          "body-lg": ["Inter"],
+          "headline-lg-mobile": ["Inter"],
+          "label-code": ["JetBrains Mono"],
+          "display-hero-mobile": ["Inter"],
+          "label-lg": ["Inter"],
+          "headline-md": ["Inter"],
+          "display-hero": ["Inter"],
+          "body-sm": ["Inter"],
+          "headline-lg": ["Inter"]
+        },
+        "fontSize": {
+          "body-md": ["14px", {"lineHeight": "22px", "letterSpacing": "0em", "fontWeight": "400"}],
+          "headline-sm": ["18px", {"lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+          "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+          "body-lg": ["16px", {"lineHeight": "26px", "letterSpacing": "-0.005em", "fontWeight": "400"}],
+          "headline-lg-mobile": ["26px", {"lineHeight": "34px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+          "label-code": ["13px", {"lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400"}],
+          "display-hero-mobile": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+          "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "500"}],
+          "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.015em", "fontWeight": "600"}],
+          "display-hero": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.025em", "fontWeight": "700"}],
+          "body-sm": ["12px", {"lineHeight": "18px", "letterSpacing": "0em", "fontWeight": "400"}],
+          "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+        }
+      }
+    }
+  }</script></head><body class="bg-background font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-64 bg-surface-container-low/80 backdrop-blur-xl z-50 flex flex-col pt-4 pb-6 shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="px-6 h-12 flex items-center gap-3 mb-4"><img alt="LearnMate Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WASDI3ifZzBoHqTPk_TFWwC9-MKrtw-4tK1teBxS8I4KrH1cWWGOXTHtNmDtA41WvqW93ADik8bbNgub5KQl3lSETFVfbXOh0mzU6EPrK1vJiKGh9cxNVVMZ4yTNPIvTlXbXSL73mKb8N8CRgnbgxF1_bCVD63hJ26cPzY-6oS7kdnOXv3q_OhpAtk16K-a6gqkttW3f0EJnjODKm0NC4cipqHM9dzWTXxrZM55Dn5Fi3pvTFs-IHkPiOY"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">LearnMate</span><span class="font-label-md text-label-md text-primary font-medium -mt-1">AI Companion</span></div></div><div class="px-4 mb-3"><div class="px-3 py-1.5 rounded-lg bg-surface-container flex items-center justify-between"><span class="font-label-md text-label-md text-on-surface-variant font-medium">Subject Stream</span><span class="flex items-center gap-1.5"><span class="font-label-code text-label-code text-primary font-semibold text-[11px]">STEM v2.4</span><span class="w-2 h-2 rounded-full bg-primary"></span></span></div></div><nav class="flex-1 px-3 space-y-1 overflow-y-auto" data-active-classes="bg-primary-container text-on-primary font-semibold shadow-sm"><a class="flex items-center justify-between px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="dashboard" href="#"><span>Dashboard</span></a><a aria-current="page" class="flex items-center justify-between px-3 py-2.5 rounded-lg transition-all bg-primary-container text-on-primary font-semibold shadow-sm" data-path="study-materials" href="#"><span>Study Materials</span></a><a class="flex items-center justify-between px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="ai-study-workspace" href="#"><span>AI Study Workspace</span></a><a class="flex items-center justify-between px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="diagnostic-practice" href="#"><span>Diagnostic Practice</span></a><a class="flex items-center justify-between px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="knowledge-gaps-and-misconceptions" href="#"><span>Knowledge Gaps & Misconceptions</span></a><a class="flex items-center justify-between px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="revision-planner" href="#"><span>Revision Planner</span></a><a class="flex items-center justify-between px-3 py-2.5 rounded-lg font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="progress-and-analytics" href="#"><span>Progress & Analytics</span></a></nav><div class="px-4 pt-3 border-t border-surface-container space-y-2"><div class="p-3 rounded-lg bg-surface-container-low flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[18px]">psychology</span><span class="font-label-md text-label-md text-on-surface font-medium">Cognitive Energy</span></div><span class="font-label-code text-label-code text-primary font-semibold">88%</span></div><a class="flex items-center justify-between px-3 py-2 rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all" data-path="auth-sign-in" href="#"><span>Sign Out / Switch</span><span class="material-symbols-outlined text-[16px]">logout</span></a></div></aside><div class="pl-64"><header class="fixed top-0 left-64 right-0 h-16 bg-surface/80 backdrop-blur-xl z-40 shadow-[0_1px_8px_rgba(0,0,0,0.04)] px-8 flex items-center justify-between"><div class="flex items-center gap-4 flex-1 max-w-lg"><div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md shrink-0"><span class="hover:text-primary cursor-pointer">LearnMate</span><span class="text-outline-variant">/</span><span class="text-on-surface font-semibold">Active Session</span></div><div class="relative w-full max-w-xs"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span><input class="w-full pl-10 pr-4 py-1.5 rounded-lg bg-surface-container-lowest/90 text-on-surface placeholder:text-on-surface-variant font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Search concepts, formulas, lessons..." type="text"/></div></div><div class="flex items-center gap-4"><div class="group relative flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container-low cursor-pointer"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-tertiary"></span></span><span class="font-label-md text-label-md text-tertiary font-medium">API Online</span><div class="absolute top-full right-0 mt-2 hidden group-hover:flex flex-col bg-inverse-surface text-inverse-on-surface p-2.5 rounded shadow-lg text-[11px] whitespace-nowrap z-50"><span class="font-semibold text-inverse-primary">Live Engine Status</span><span>GET /health • Latency 38ms</span><span>Sync Engine: Active</span><span>Model: Claude 3.5 Sonnet</span></div></div><div class="flex items-center gap-2 px-2 py-1 rounded-lg bg-surface-container-low"><button class="p-1 rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container" title="Toggle Light / Dark Mode"><span class="material-symbols-outlined text-[18px]">light_mode</span></button><div class="h-4 w-px bg-outline-variant"></div><div class="flex items-center gap-1 px-1"><span class="w-3.5 h-3.5 rounded-full bg-[#7c3aed] ring-2 ring-offset-1 ring-primary cursor-pointer" title="Violet Accent"></span><span class="w-3.5 h-3.5 rounded-full bg-[#0051d5] cursor-pointer hover:scale-110 transition-transform" title="Blue Accent"></span><span class="w-3.5 h-3.5 rounded-full bg-[#005952] cursor-pointer hover:scale-110 transition-transform" title="Teal Accent"></span><span class="w-3.5 h-3.5 rounded-full bg-[#16a34a] cursor-pointer hover:scale-110 transition-transform" title="Green Accent"></span><span class="w-3.5 h-3.5 rounded-full bg-[#db2777] cursor-pointer hover:scale-110 transition-transform" title="Pink Accent"></span><span class="w-3.5 h-3.5 rounded-full bg-[#ca8a04] cursor-pointer hover:scale-110 transition-transform" title="Yellow Accent"></span></div></div><button class="relative p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-error"></span></button><div class="flex items-center gap-2.5 pl-2 py-1 pr-2 rounded-lg bg-surface-container-low/60"><img alt="Alex Rivera - Student" class="w-8 h-8 rounded-full object-cover ring-2 ring-primary-fixed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDntQoZ3b3OdTTCSVad6zt6sC9mMYS1WIa-pt690lntPnakauV3AnzkQLdQKtH2C3a1QidX7MzSaWi98ObsFOhavHpg7fZm22uaJTJs-LFsuogiG-62rlXNrutRnE4EAPq0hWwgFWsRe6FHIGTdbXdK43zfgkCa9RTF4dRSCZjjnzt9Yr7_4E6Q7O4TIRWU7TXVzGF8O2Gt6xAYoOtTHCdMIbPEEiQy3Rrf370EZ8EYVdr8xpNL0DfD2w"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Alex Rivera</span><span class="font-label-code text-label-code text-on-surface-variant text-[11px] leading-tight">Grade 11 AP</span></div></div></div></header><main class="relative w-full pt-16 bg-surface px-8 min-h-screen"><div class="flex flex-col w-full pb-16">
+<!-- Top Stat & Status Summary Ribbon -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+<div class="p-4 rounded-xl bg-surface-container-low shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">auto_stories</span>
+</div>
+<div>
+<span class="font-label-md text-label-md text-on-surface-variant block">Indexed Materials</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">24 Documents</span>
+</div>
+</div>
+<span class="font-label-code text-label-code text-primary font-medium bg-primary/10 px-2 py-0.5 rounded text-[11px]">+3 this week</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">dataset</span>
+</div>
+<div>
+<span class="font-label-md text-label-md text-on-surface-variant block">Total Vector Chunks</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">1,482 Chunks</span>
+</div>
+</div>
+<span class="font-label-code text-label-code text-secondary font-medium bg-secondary/10 px-2 py-0.5 rounded text-[11px]">pgvector v0.6</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">memory</span>
+</div>
+<div>
+<span class="font-label-md text-label-md text-on-surface-variant block">Tokens Ingested</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">392,400</span>
+</div>
+</div>
+<span class="font-label-code text-label-code text-tertiary font-medium bg-tertiary/10 px-2 py-0.5 rounded text-[11px]">99.4% parsed</span>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">cloud_sync</span>
+</div>
+<div>
+<span class="font-label-md text-label-md text-on-surface-variant block">Storage Quota</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">48.2 / 250 MB</span>
+</div>
+</div>
+<div class="w-12 h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="w-1/5 h-full bg-primary rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Main Dual Action Bar -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+<div>
+<div class="flex items-center gap-2">
+<span class="font-headline-md text-headline-md text-on-surface">Study Materials Library</span>
+<span class="font-label-code text-label-code px-2 py-0.5 rounded bg-surface-container text-on-surface-variant text-[11px]">v1 API</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Manage source texts, course syllabi, and lecture transcripts powering your semantic AI study workspace.</p>
+</div>
+<div class="flex items-center gap-3 flex-wrap">
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg flex items-center gap-2 shadow-sm hover:opacity-95 transition-opacity" id="tab-btn-pdf" onclick="switchUploadTab('pdf')">
+<span class="material-symbols-outlined text-[18px]">upload_file</span>
+<span>Upload PDF</span>
+</button>
+<button class="px-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-label-lg text-label-lg flex items-center gap-2 shadow-sm hover:bg-surface-container transition-colors" id="tab-btn-note" onclick="switchUploadTab('note')">
+<span class="material-symbols-outlined text-[18px]">edit_note</span>
+<span>+ Add Text Notes</span>
+</button>
+</div>
+</div>
+<!-- Interactive Ingestion Card (Dual Mode: PDF Dropzone vs Text Paste) -->
+<div class="mb-8 rounded-xl bg-surface-container-lowest/90 backdrop-blur-md shadow-sm p-6 relative overflow-hidden">
+<!-- Notice Banner -->
+<div class="mb-5 px-4 py-2.5 rounded-lg bg-surface-container-low flex items-center justify-between text-on-surface-variant font-label-md text-label-md">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-secondary text-[20px]">info</span>
+<span><strong class="text-on-surface font-semibold">Ingestion Engine Notice:</strong> Backend processes text-selectable PDFs natively. Scanned image documents without OCR layers are not supported.</span>
+</div>
+<span class="font-label-code text-label-code text-on-surface-variant text-[11px]">POST /api/v1/materials</span>
+</div>
+<!-- Mode 1: PDF Dropzone View -->
+<div class="flex flex-col" id="panel-pdf-upload">
+<div class="relative w-full rounded-xl p-8 bg-surface-container-low/40 flex flex-col items-center justify-center text-center cursor-pointer group hover:bg-surface-container-high/40 transition-colors">
+<input accept="application/pdf" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" id="pdfFileInput" onchange="handleFileSelected(event)" type="file"/>
+<div class="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[32px]">cloud_upload</span>
+</div>
+<span class="font-headline-sm text-headline-sm text-on-surface mb-1">Drag and drop your study PDF here</span>
+<span class="font-body-md text-body-md text-on-surface-variant mb-2">or <span class="text-primary font-semibold underline underline-offset-4">browse files</span> from your local drive</span>
+<div class="flex items-center gap-3 text-on-surface-variant font-label-md text-label-md">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+            PDF documents only
+          </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">data_usage</span>
+            Maximum file size: 10 MB
+          </span>
+<span>•</span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+            Instant Vectorization
+          </span>
+</div>
+</div>
+<!-- File Ingest Status Pill (Hidden by default, shown on select) -->
+<div class="hidden mt-4 p-4 rounded-lg bg-surface-container flex items-center justify-between" id="upload-progress-banner">
+<div class="flex items-center gap-3 min-w-0">
+<span class="material-symbols-outlined text-primary text-[24px]">description</span>
+<div class="truncate">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold block truncate" id="selected-file-name">syllabus-calculus-iv.pdf</span>
+<span class="font-label-md text-label-md text-on-surface-variant">4.2 MB • Ready for multipart ingestion</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="px-3.5 py-1.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold hover:opacity-90 transition-opacity" onclick="simulateUpload()">Submit to Pipeline</button>
+<button class="p-1 text-on-surface-variant hover:text-error transition-colors" onclick="cancelUploadSelection()"><span class="material-symbols-outlined text-[20px]">close</span></button>
+</div>
+</div>
+</div>
+<!-- Mode 2: Paste Raw Text Notes View (Hidden by default) -->
+<div class="hidden flex-col" id="panel-text-note">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-2">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Direct Text / Lecture Note Ingestion</span>
+<span class="font-label-code text-label-code text-secondary text-[11px] bg-secondary/10 px-2 py-0.5 rounded">POST /api/v1/materials/text</span>
+</div>
+<span class="font-label-code text-label-code text-on-surface-variant text-[11px]" id="char-counter">0 / 45,000 chars</span>
+</div>
+<input class="w-full px-4 py-2.5 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20 mb-3" id="note-title-input" placeholder="Note Title (e.g., Week 7 Organic Chemistry Reaction Mechanisms)" type="text"/>
+<textarea class="w-full px-4 py-3 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20 resize-y mb-4" id="note-content-input" oninput="updateCharCount()" placeholder="Paste syllabus sections, transcript notes, lecture takeaways, or problem set instructions here..." rows="5"></textarea>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-tertiary">check</span>
+<span>Chunked into 512-token windows automatically with 64-token overlap</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3.5 py-1.5 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" onclick="switchUploadTab('pdf')">Cancel</button>
+<button class="px-4 py-1.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold hover:opacity-90 transition-opacity" onclick="submitTextNote()">Ingest Note</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Search, Filter & View Controls -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+<div class="flex items-center gap-3 flex-1 max-w-md">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full pl-9 pr-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:ring-2 focus:ring-primary/20" id="materialsSearchInput" onkeyup="filterMaterials()" placeholder="Search by title, subject, or chunk tag..." type="text"/>
+</div>
+<button class="p-2 rounded-lg bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Filter by Subject">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+</button>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex items-center gap-1.5 bg-surface-container-low px-3 py-1.5 rounded-lg text-on-surface-variant font-label-md text-label-md">
+<span>Sort:</span>
+<select class="bg-transparent font-semibold text-on-surface focus:outline-none cursor-pointer">
+<option>Recently Added</option>
+<option>Largest Size</option>
+<option>Vector Chunks Count</option>
+<option>Alphabetical</option>
+</select>
+</div>
+<div class="flex items-center bg-surface-container-low p-1 rounded-lg">
+<button class="px-2.5 py-1 rounded bg-surface-container-lowest shadow-sm text-primary font-label-md text-label-md font-semibold" id="view-mode-table" onclick="toggleViewMode('table')">Table</button>
+<button class="px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface font-label-md text-label-md" id="view-mode-grid" onclick="toggleViewMode('grid')">Cards</button>
+</div>
+</div>
+</div>
+<!-- Table View Container -->
+<div class="w-full rounded-xl bg-surface-container-lowest/80 shadow-sm overflow-hidden mb-6" id="materials-table-wrapper">
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-md text-body-md text-on-surface border-collapse">
+<thead class="bg-surface-container-low/70 text-on-surface-variant font-label-md text-label-md uppercase tracking-wider">
+<tr>
+<th class="py-3.5 px-5 font-semibold">Document Title</th>
+<th class="py-3.5 px-4 font-semibold">Format & Size</th>
+<th class="py-3.5 px-4 font-semibold">Vector Chunks</th>
+<th class="py-3.5 px-4 font-semibold">Ingestion Status</th>
+<th class="py-3.5 px-4 font-semibold">Last Accessed</th>
+<th class="py-3.5 px-5 font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low" id="materialsTableBody">
+<!-- Item 1: Calculus III -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</div>
+<div class="min-w-0">
+<a class="font-headline-sm text-headline-sm text-on-surface font-semibold hover:text-primary transition-colors block truncate" href="#" onclick="openPreviewModal(1); return false;">
+                    Calculus III - Vector Fields & Surface Integrals.pdf
+                  </a>
+<span class="font-label-md text-label-md text-on-surface-variant">Mathematics • Green's Theorem, Stokes' Theorem</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="font-label-code text-label-code text-on-surface block">14 pages</span>
+<span class="font-label-md text-label-md text-on-surface-variant">3.2 MB</span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="font-label-code text-label-code font-semibold text-primary">42 chunks</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">12,600 tokens</span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-md text-label-md font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                Ready
+              </span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap font-label-md text-label-md text-on-surface-variant">
+              Today, 10:24 AM
+            </td>
+<td class="py-4 px-5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" onclick="openPreviewModal(1)" title="Inspect Chunks">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-colors" onclick="openWorkspaceForDoc('Calculus III')" title="Open in AI Workspace">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-surface-container transition-colors" onclick="promptDeleteMaterial(1, 'Calculus III - Vector Fields & Surface Integrals.pdf')" title="Delete">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Item 2: AP Biology -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-tertiary/10 text-tertiary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">description</span>
+</div>
+<div class="min-w-0">
+<a class="font-headline-sm text-headline-sm text-on-surface font-semibold hover:text-primary transition-colors block truncate" href="#" onclick="openPreviewModal(2); return false;">
+                    AP Biology - Cellular Respiration & Krebs Cycle.txt
+                  </a>
+<span class="font-label-md text-label-md text-on-surface-variant">Life Sciences • Glycolysis, Electron Transport Chain</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="font-label-code text-label-code text-on-surface block">6 pages (equiv.)</span>
+<span class="font-label-md text-label-md text-on-surface-variant">480 KB</span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="font-label-code text-label-code font-semibold text-tertiary">21 chunks</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">5,840 tokens</span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-md text-label-md font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                Ready
+              </span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap font-label-md text-label-md text-on-surface-variant">
+              Yesterday, 4:12 PM
+            </td>
+<td class="py-4 px-5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" onclick="openPreviewModal(2)" title="Inspect Chunks">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-colors" onclick="openWorkspaceForDoc('AP Biology')" title="Open in AI Workspace">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-surface-container transition-colors" onclick="promptDeleteMaterial(2, 'AP Biology - Cellular Respiration & Krebs Cycle.txt')" title="Delete">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Item 3: Linear Algebra -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</div>
+<div class="min-w-0">
+<a class="font-headline-sm text-headline-sm text-on-surface font-semibold hover:text-primary transition-colors block truncate" href="#" onclick="openPreviewModal(3); return false;">
+                    Linear Algebra - Eigenvectors & Spectral Theorem.pdf
+                  </a>
+<span class="font-label-md text-label-md text-on-surface-variant">Mathematics • Diagonalization, Symmetric Matrices</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="font-label-code text-label-code text-on-surface block">18 pages</span>
+<span class="font-label-md text-label-md text-on-surface-variant">4.1 MB</span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="font-label-code text-label-code font-semibold text-secondary">54 chunks</span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">16,200 tokens</span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-md text-label-md font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                Ready
+              </span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap font-label-md text-label-md text-on-surface-variant">
+              Oct 28, 2024
+            </td>
+<td class="py-4 px-5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" onclick="openPreviewModal(3)" title="Inspect Chunks">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-colors" onclick="openWorkspaceForDoc('Linear Algebra')" title="Open in AI Workspace">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-surface-container transition-colors" onclick="promptDeleteMaterial(3, 'Linear Algebra - Eigenvectors & Spectral Theorem.pdf')" title="Delete">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Item 4: Microeconomics -->
+<tr class="hover:bg-surface-container-low/50 transition-colors group">
+<td class="py-4 px-5">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+</div>
+<div class="min-w-0">
+<a class="font-headline-sm text-headline-sm text-on-surface font-semibold hover:text-primary transition-colors block truncate" href="#" onclick="openPreviewModal(4); return false;">
+                    Microeconomics - Game Theory & Nash Equilibrium.pdf
+                  </a>
+<span class="font-label-md text-label-md text-on-surface-variant">Social Sciences • Payoff Matrices, Dominant Strategies</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="font-label-code text-label-code text-on-surface block">9 pages</span>
+<span class="font-label-md text-label-md text-on-surface-variant">1.8 MB</span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<div class="flex items-center gap-2">
+<span class="font-label-code text-label-code font-semibold text-primary">28 chunks</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</div>
+<span class="font-label-md text-label-md text-on-surface-variant">8,400 tokens</span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-tertiary/10 text-tertiary font-label-md text-label-md font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                Ready
+              </span>
+</td>
+<td class="py-4 px-4 whitespace-nowrap font-label-md text-label-md text-on-surface-variant">
+              Oct 24, 2024
+            </td>
+<td class="py-4 px-5 text-right whitespace-nowrap">
+<div class="flex items-center justify-end gap-1">
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" onclick="openPreviewModal(4)" title="Inspect Chunks">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-colors" onclick="openWorkspaceForDoc('Microeconomics')" title="Open in AI Workspace">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-error hover:bg-surface-container transition-colors" onclick="promptDeleteMaterial(4, 'Microeconomics - Game Theory & Nash Equilibrium.pdf')" title="Delete">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination & API Status Footer -->
+<div class="px-5 py-3.5 bg-surface-container-low/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-on-surface-variant font-label-md text-label-md">
+<div class="flex items-center gap-2">
+<span>Showing <strong class="text-on-surface font-semibold">1-4</strong> of <strong class="text-on-surface font-semibold">24</strong> materials</span>
+<span>•</span>
+<span class="font-label-code text-label-code text-primary text-[11px]">GET /api/v1/materials?page=1&limit=10</span>
+</div>
+<div class="flex items-center gap-1 self-end sm:self-auto">
+<button class="px-3 py-1 rounded bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors disabled:opacity-50" disabled="">Previous</button>
+<button class="w-8 h-8 rounded bg-primary text-on-primary font-label-md text-label-md font-semibold">1</button>
+<button class="w-8 h-8 rounded bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors">2</button>
+<button class="w-8 h-8 rounded bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors">3</button>
+<button class="px-3 py-1 rounded bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors">Next</button>
+</div>
+</div>
+</div>
+<!-- Cards Grid View Alternative (Toggled via JS) -->
+<div class="hidden grid-cols-1 md:grid-cols-2 gap-5 mb-8" id="materials-grid-wrapper">
+<!-- Card 1 -->
+<div class="p-5 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-md text-label-md font-semibold">Mathematics</span>
+<span class="font-label-code text-label-code text-tertiary text-[11px] font-semibold">Ready • 42 Chunks</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold mb-1">Calculus III - Vector Fields & Surface Integrals.pdf</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">Curriculum covering curl, divergence, conservative vector fields, parametric surfaces, and flux calculations across non-orientable manifolds.</p>
+</div>
+<div class="pt-3 border-t border-surface-container flex items-center justify-between">
+<span class="font-label-code text-label-code text-on-surface-variant text-[12px]">14 pages • 3.2 MB</span>
+<button class="text-primary font-label-md text-label-md font-semibold hover:underline" onclick="openPreviewModal(1)">Inspect Content →</button>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="p-5 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-0.5 rounded-full bg-tertiary/10 text-tertiary font-label-md text-label-md font-semibold">Life Sciences</span>
+<span class="font-label-code text-label-code text-tertiary text-[11px] font-semibold">Ready • 21 Chunks</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold mb-1">AP Biology - Cellular Respiration & Krebs Cycle.txt</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">High-yield study notes detailing pyruvate oxidation, the citric acid cycle, substrate-level phosphorylation, and ATP synthase mechanisms.</p>
+</div>
+<div class="pt-3 border-t border-surface-container flex items-center justify-between">
+<span class="font-label-code text-label-code text-on-surface-variant text-[12px]">6 pages • 480 KB</span>
+<button class="text-primary font-label-md text-label-md font-semibold hover:underline" onclick="openPreviewModal(2)">Inspect Content →</button>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="p-5 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary font-label-md text-label-md font-semibold">Mathematics</span>
+<span class="font-label-code text-label-code text-tertiary text-[11px] font-semibold">Ready • 54 Chunks</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold mb-1">Linear Algebra - Eigenvectors & Spectral Theorem.pdf</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">Detailed treatments on characteristic polynomials, geometric vs algebraic multiplicity, positive definite forms, and singular value decomposition.</p>
+</div>
+<div class="pt-3 border-t border-surface-container flex items-center justify-between">
+<span class="font-label-code text-label-code text-on-surface-variant text-[12px]">18 pages • 4.1 MB</span>
+<button class="text-primary font-label-md text-label-md font-semibold hover:underline" onclick="openPreviewModal(3)">Inspect Content →</button>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="p-5 rounded-xl bg-surface-container-lowest shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-3">
+<span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-md text-label-md font-semibold">Economics</span>
+<span class="font-label-code text-label-code text-tertiary text-[11px] font-semibold">Ready • 28 Chunks</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-semibold mb-1">Microeconomics - Game Theory & Nash Equilibrium.pdf</h4>
+<p class="font-body-md text-body-md text-on-surface-variant line-clamp-2 mb-4">Simultaneous vs sequential game trees, mixed-strategy equilibrium calculation, Cournot and Bertrand duopoly competition models.</p>
+</div>
+<div class="pt-3 border-t border-surface-container flex items-center justify-between">
+<span class="font-label-code text-label-code text-on-surface-variant text-[12px]">9 pages • 1.8 MB</span>
+<button class="text-primary font-label-md text-label-md font-semibold hover:underline" onclick="openPreviewModal(4)">Inspect Content →</button>
+</div>
+</div>
+</div>
+<!-- Detail Content & Vector Chunk Inspector Slide-Out Drawer / Modal (GET /api/v1/materials/{id}/content) -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex justify-end" id="contentPreviewDrawer">
+<div class="w-full max-w-2xl bg-surface-container-lowest h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+<!-- Drawer Header -->
+<div class="p-6 bg-surface-container-low flex items-start justify-between">
+<div class="min-w-0 pr-4">
+<div class="flex items-center gap-2 mb-1">
+<span class="font-label-code text-label-code text-primary bg-primary/10 px-2 py-0.5 rounded text-[11px]">GET /api/v1/materials/1/content</span>
+<span class="font-label-code text-label-code text-tertiary bg-tertiary/10 px-2 py-0.5 rounded text-[11px]">HTTP 200 OK</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold truncate" id="drawer-doc-title">Calculus III - Vector Fields & Surface Integrals.pdf</h3>
+<p class="font-label-md text-label-md text-on-surface-variant mt-0.5">Extracted semantic payload & embedding chunk inspection</p>
+</div>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" onclick="closePreviewModal()">
+<span class="material-symbols-outlined text-[24px]">close</span>
+</button>
+</div>
+<!-- Drawer Metadata Bar -->
+<div class="px-6 py-3 bg-surface-container flex items-center justify-between text-on-surface-variant font-label-md text-label-md">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary">grain</span>
+<span id="drawer-chunk-count">42 Vector Chunks</span>
+</span>
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-secondary">token</span>
+<span id="drawer-token-count">12,600 Tokens</span>
+</span>
+</div>
+<span class="font-label-code text-label-code text-on-surface-variant text-[11px]">Embedding: text-embedding-3-small</span>
+</div>
+<!-- Drawer Content Stream -->
+<div class="flex-1 p-6 overflow-y-auto space-y-4">
+<div>
+<span class="font-label-md text-label-md text-on-surface font-semibold block mb-2">Chunk #1 • Heading & Definition Range</span>
+<div class="p-4 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md leading-relaxed relative">
+<span class="absolute top-2 right-2 font-label-code text-label-code text-primary bg-primary/10 px-2 py-0.5 rounded text-[10px]">Chunk ID: vec-chunk-01</span>
+<p><strong>Section 16.2: Line Integrals in Vector Fields.</strong> Let \(\mathbf{F}(x, y, z) = P\mathbf{i} + Q\mathbf{j} + R\mathbf{k}\) be a continuous vector field defined on a smooth curve \(C\) parameterized by \(\mathbf{r}(t)\) for \(a \le t \le b\). The line integral of \(\mathbf{F}\) along \(C\) evaluates the net work done along the trajectory: \[\int_C \mathbf{F} \cdot d\mathbf{r} = \int_a^b \mathbf{F}(\mathbf{r}(t)) \cdot \mathbf{r}'(t) \, dt\]</p>
+</div>
+</div>
+<div>
+<span class="font-label-md text-label-md text-on-surface font-semibold block mb-2">Chunk #2 • Stokes' Theorem Vector Identity</span>
+<div class="p-4 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md leading-relaxed relative">
+<span class="absolute top-2 right-2 font-label-code text-label-code text-primary bg-primary/10 px-2 py-0.5 rounded text-[10px]">Chunk ID: vec-chunk-02</span>
+<p><strong>Theorem 16.8 (Stokes' Theorem):</strong> Let \(S\) be an oriented piecewise-smooth surface bounded by a simple, closed, piecewise-smooth curve \(C\) having positive orientation. If \(\mathbf{F}\) has continuous partial derivatives on an open region that contains \(S\), then: \[\oint_C \mathbf{F} \cdot d\mathbf{r} = \iint_S \text{curl}\,\mathbf{F} \cdot d\mathbf{S}\]</p>
+</div>
+</div>
+<div>
+<span class="font-label-md text-label-md text-on-surface font-semibold block mb-2">Chunk #3 • Flux Integrals Across Closed Boundaries</span>
+<div class="p-4 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md leading-relaxed relative">
+<span class="absolute top-2 right-2 font-label-code text-label-code text-primary bg-primary/10 px-2 py-0.5 rounded text-[10px]">Chunk ID: vec-chunk-03</span>
+<p>Surface integrals of vector fields calculate the volume flux per unit time through a designated boundary. In physical modeling of fluid dynamics and electrostatics, divergence theorem (Gauss' Theorem) establishes the equivalence between the triple integral of divergence over a solid region \(E\) and the surface flux over boundary \(\partial E\).</p>
+</div>
+</div>
+</div>
+<!-- Drawer Bottom Actions -->
+<div class="p-4 bg-surface-container-low flex items-center justify-between border-t border-surface-container">
+<button class="px-4 py-2 rounded-lg bg-error/10 text-error hover:bg-error/20 font-label-md text-label-md font-semibold flex items-center gap-2 transition-colors" onclick="promptDeleteMaterial(1, 'Calculus III - Vector Fields & Surface Integrals.pdf')">
+<span class="material-symbols-outlined text-[18px]">delete</span>
+<span>Delete Material</span>
+</button>
+<div class="flex items-center gap-2">
+<button class="px-4 py-2 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" onclick="closePreviewModal()">Close</button>
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-semibold hover:opacity-90 transition-opacity flex items-center gap-2" onclick="openWorkspaceForDoc('Calculus III')">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+<span>Query in AI Workspace</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Delete Confirmation Modal (DELETE /api/v1/materials/{id}) -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/50 backdrop-blur-sm hidden flex items-center justify-center p-4" id="deleteConfirmModal">
+<div class="w-full max-w-md rounded-xl bg-surface-container-lowest p-6 shadow-2xl animate-in zoom-in-95 duration-150">
+<div class="w-12 h-12 rounded-full bg-error/10 text-error flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-[28px]">warning</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold mb-2">Delete Study Material?</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">
+        You are about to delete <strong class="text-on-surface" id="delete-target-name">document.pdf</strong>. This action will permanently prune all associated vector chunks and cognitive index traces from your AI study assistant.
+      </p>
+<div class="p-3 rounded-lg bg-surface-container-low mb-5 flex items-center justify-between font-label-code text-label-code text-on-surface-variant text-[11px]">
+<span>Target API:</span>
+<span class="text-error font-semibold" id="delete-api-endpoint">DELETE /api/v1/materials/1</span>
+</div>
+<div class="flex items-center justify-end gap-3">
+<button class="px-4 py-2 rounded-lg bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" onclick="closeDeleteModal()">Cancel</button>
+<button class="px-4 py-2 rounded-lg bg-error text-on-error font-label-md text-label-md font-semibold hover:opacity-90 transition-opacity" onclick="executeDeleteMaterial()">Confirm Deletion</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  let activeDeleteId = null;
+
+  function switchUploadTab(mode) {
+    const pdfPanel = document.getElementById('panel-pdf-upload');
+    const notePanel = document.getElementById('panel-text-note');
+    const pdfBtn = document.getElementById('tab-btn-pdf');
+    const noteBtn = document.getElementById('tab-btn-note');
+
+    if (mode === 'pdf') {
+      pdfPanel.classList.remove('hidden');
+      notePanel.classList.add('hidden');
+      pdfBtn.className = 'px-4 py-2 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg flex items-center gap-2 shadow-sm hover:opacity-95 transition-opacity';
+      noteBtn.className = 'px-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-label-lg text-label-lg flex items-center gap-2 shadow-sm hover:bg-surface-container transition-colors';
+    } else {
+      pdfPanel.classList.add('hidden');
+      notePanel.classList.remove('hidden');
+      noteBtn.className = 'px-4 py-2 rounded-lg bg-primary text-on-primary font-label-lg text-label-lg flex items-center gap-2 shadow-sm hover:opacity-95 transition-opacity';
+      pdfBtn.className = 'px-4 py-2 rounded-lg bg-surface-container-low text-on-surface font-label-lg text-label-lg flex items-center gap-2 shadow-sm hover:bg-surface-container transition-colors';
+    }
+  }
+
+  function handleFileSelected(event) {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size exceeds 10 MB limit. Please select a smaller PDF.');
+        return;
+      }
+      document.getElementById('selected-file-name').innerText = file.name;
+      document.getElementById('upload-progress-banner').classList.remove('hidden');
+    }
+  }
+
+  function cancelUploadSelection() {
+    document.getElementById('pdfFileInput').value = '';
+    document.getElementById('upload-progress-banner').classList.add('hidden');
+  }
+
+  function simulateUpload() {
+    const banner = document.getElementById('upload-progress-banner');
+    banner.innerHTML = `
+      <div class="flex items-center gap-3 w-full">
+        <span class="material-symbols-outlined text-primary text-[24px] animate-spin">progress_activity</span>
+        <div class="flex-1">
+          <div class="flex justify-between font-label-md text-label-md text-on-surface mb-1">
+            <span>Ingesting & Vectorizing (POST /api/v1/materials)...</span>
+            <span>72%</span>
+          </div>
+          <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden">
+            <div class="bg-primary h-full rounded-full transition-all duration-300" style="width: 72%"></div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    setTimeout(() => {
+      banner.innerHTML = `
+        <div class="flex items-center justify-between w-full">
+          <div class="flex items-center gap-2 text-tertiary font-label-md text-label-md font-semibold">
+            <span class="material-symbols-outlined text-[20px]">check_circle</span>
+            <span>Document successfully indexed into 38 vector chunks!</span>
+          </div>
+          <button onclick="cancelUploadSelection()" class="px-3 py-1 rounded bg-surface-container font-label-md text-label-md text-on-surface">Dismiss</button>
+        </div>
+      `;
+    }, 1800);
+  }
+
+  function updateCharCount() {
+    const text = document.getElementById('note-content-input').value;
+    document.getElementById('char-counter').innerText = `${text.length} / 45,000 chars`;
+  }
+
+  function submitTextNote() {
+    const title = document.getElementById('note-title-input').value.trim();
+    const content = document.getElementById('note-content-input').value.trim();
+
+    if (!title || !content) {
+      alert('Please provide both a note title and textual content.');
+      return;
+    }
+
+    alert(`Successfully sent payload to POST /api/v1/materials/text\nTitle: "${title}"\nTokens Estimated: ${Math.round(content.length / 4)}`);
+    document.getElementById('note-title-input').value = '';
+    document.getElementById('note-content-input').value = '';
+    updateCharCount();
+    switchUploadTab('pdf');
+  }
+
+  function toggleViewMode(mode) {
+    const tableWrapper = document.getElementById('materials-table-wrapper');
+    const gridWrapper = document.getElementById('materials-grid-wrapper');
+    const tableBtn = document.getElementById('view-mode-table');
+    const gridBtn = document.getElementById('view-mode-grid');
+
+    if (mode === 'table') {
+      tableWrapper.classList.remove('hidden');
+      gridWrapper.classList.add('hidden');
+      gridWrapper.classList.remove('grid');
+      tableBtn.className = 'px-2.5 py-1 rounded bg-surface-container-lowest shadow-sm text-primary font-label-md text-label-md font-semibold';
+      gridBtn.className = 'px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface font-label-md text-label-md';
+    } else {
+      tableWrapper.classList.add('hidden');
+      gridWrapper.classList.remove('hidden');
+      gridWrapper.classList.add('grid');
+      gridBtn.className = 'px-2.5 py-1 rounded bg-surface-container-lowest shadow-sm text-primary font-label-md text-label-md font-semibold';
+      tableBtn.className = 'px-2.5 py-1 rounded text-on-surface-variant hover:text-on-surface font-label-md text-label-md';
+    }
+  }
+
+  function openPreviewModal(id) {
+    const docTitles = {
+      1: 'Calculus III - Vector Fields & Surface Integrals.pdf',
+      2: 'AP Biology - Cellular Respiration & Krebs Cycle.txt',
+      3: 'Linear Algebra - Eigenvectors & Spectral Theorem.pdf',
+      4: 'Microeconomics - Game Theory & Nash Equilibrium.pdf'
+    };
+    const chunkCounts = { 1: '42 Vector Chunks', 2: '21 Vector Chunks', 3: '54 Vector Chunks', 4: '28 Vector Chunks' };
+    const tokenCounts = { 1: '12,600 Tokens', 2: '5,840 Tokens', 3: '16,200 Tokens', 4: '8,400 Tokens' };
+
+    document.getElementById('drawer-doc-title').innerText = docTitles[id] || 'Document Inspector';
+    document.getElementById('drawer-chunk-count').innerText = chunkCounts[id] || '30 Vector Chunks';
+    document.getElementById('drawer-token-count').innerText = tokenCounts[id] || '9,000 Tokens';
+    document.getElementById('contentPreviewDrawer').classList.remove('hidden');
+  }
+
+  function closePreviewModal() {
+    document.getElementById('contentPreviewDrawer').classList.add('hidden');
+  }
+
+  function promptDeleteMaterial(id, name) {
+    activeDeleteId = id;
+    document.getElementById('delete-target-name').innerText = name;
+    document.getElementById('delete-api-endpoint').innerText = `DELETE /api/v1/materials/${id}`;
+    document.getElementById('deleteConfirmModal').classList.remove('hidden');
+  }
+
+  function closeDeleteModal() {
+    document.getElementById('deleteConfirmModal').classList.add('hidden');
+    activeDeleteId = null;
+  }
+
+  function executeDeleteMaterial() {
+    if (activeDeleteId) {
+      alert(`API Request Dispatched: DELETE /api/v1/materials/${activeDeleteId}\nMaterial record pruned successfully.`);
+      closeDeleteModal();
+      closePreviewModal();
+    }
+  }
+
+  function openWorkspaceForDoc(subject) {
+    alert(`Transitioning to AI Study Workspace with context filter: "${subject}"`);
+  }
+
+  function filterMaterials() {
+    const query = document.getElementById('materialsSearchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#materialsTableBody tr');
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.style.display = text.includes(query) ? '' : 'none';
+    });
+  }
+</script></main></div></body></html>

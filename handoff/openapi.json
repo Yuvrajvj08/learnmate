@@ -1,0 +1,2465 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LearnMate API",
+    "description": "AI-powered personalized learning companion backend for students.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "Health & System"
+        ],
+        "summary": "System Health and Readiness",
+        "description": "Return application status and verify database connectivity.",
+        "operationId": "check_health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_HealthData_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/config/status": {
+      "get": {
+        "tags": [
+          "Health & System"
+        ],
+        "summary": "System Configuration Status",
+        "description": "Return safe readiness indicators without exposing secret keys.",
+        "operationId": "get_config_status_api_v1_config_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ConfigStatusData_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/demo/reset": {
+      "post": {
+        "tags": [
+          "Health & System"
+        ],
+        "summary": "Development Demo Reset",
+        "description": "Reset demo student data (materials, quizzes, mastery, misconceptions, revision tasks).\nProtected to prevent accidental execution in production.",
+        "operationId": "reset_demo_data_api_v1_demo_reset_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/materials": {
+      "post": {
+        "tags": [
+          "Study Materials"
+        ],
+        "summary": "Upload Study Material PDF",
+        "description": "Upload and index a PDF document page-by-page.\nExtracts text, preserves page numbers, and breaks content into searchable chunks.",
+        "operationId": "upload_pdf_material_api_v1_materials_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_pdf_material_api_v1_materials_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MaterialData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Study Materials"
+        ],
+        "summary": "List Study Materials",
+        "description": "Retrieve all study materials for the demo student with pagination.",
+        "operationId": "list_materials_api_v1_materials_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MaterialListResponse_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/materials/text": {
+      "post": {
+        "tags": [
+          "Study Materials"
+        ],
+        "summary": "Add Pasted Study Notes",
+        "description": "Store and index pasted study notes with section references.",
+        "operationId": "create_text_material_api_v1_materials_text_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MaterialCreateText"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MaterialData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/materials/{material_id}": {
+      "get": {
+        "tags": [
+          "Study Materials"
+        ],
+        "summary": "Get Study Material Metadata",
+        "description": "Retrieve metadata and chunk statistics for a single study material.",
+        "operationId": "get_material_api_v1_materials__material_id__get",
+        "parameters": [
+          {
+            "name": "material_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Material Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MaterialDetailData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Study Materials"
+        ],
+        "summary": "Delete Study Material",
+        "description": "Delete study material and its indexed chunks. Associated quiz sessions retain material_id=NULL.",
+        "operationId": "delete_material_api_v1_materials__material_id__delete",
+        "parameters": [
+          {
+            "name": "material_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Material Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MaterialDeleteData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/materials/{material_id}/content": {
+      "get": {
+        "tags": [
+          "Study Materials"
+        ],
+        "summary": "Get Study Material Extracted Content",
+        "description": "Retrieve extracted chunks with page/section numbers.",
+        "operationId": "get_material_content_api_v1_materials__material_id__content_get",
+        "parameters": [
+          {
+            "name": "material_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Material Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MaterialContentData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tutor/ask": {
+      "post": {
+        "tags": [
+          "AI Tutor"
+        ],
+        "summary": "Ask AI Tutor Grounded in Study Material",
+        "description": "Ask a question grounded exclusively in the student's study material.\nReturns page-level/section citations and abstains when evidence is insufficient.",
+        "operationId": "ask_tutor_api_v1_tutor_ask_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TutorAskRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_TutorData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes": {
+      "post": {
+        "tags": [
+          "Quizzes & Practice"
+        ],
+        "summary": "Generate Quiz from Study Material",
+        "description": "Generate a diagnostic, practice, or follow-up multiple-choice quiz grounded in study material.\nAnswer keys are strictly withheld until submission.",
+        "operationId": "create_quiz_api_v1_quizzes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_QuizData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes/{quiz_id}": {
+      "get": {
+        "tags": [
+          "Quizzes & Practice"
+        ],
+        "summary": "Get Quiz Questions",
+        "description": "Retrieve quiz questions with grading keys safely hidden.",
+        "operationId": "get_quiz_api_v1_quizzes__quiz_id__get",
+        "parameters": [
+          {
+            "name": "quiz_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Quiz Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_QuizData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quizzes/{quiz_id}/submit": {
+      "post": {
+        "tags": [
+          "Quizzes & Practice"
+        ],
+        "summary": "Submit Quiz Answers for Server-Side Grading",
+        "description": "Submit answers for objective server-side evaluation.\nCalculates score, reveals explanations, updates topic mastery, and records misconceptions.",
+        "operationId": "submit_quiz_api_v1_quizzes__quiz_id__submit_post",
+        "parameters": [
+          {
+            "name": "quiz_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Quiz Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuizSubmitRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_QuizResultData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/knowledge-gaps": {
+      "get": {
+        "tags": [
+          "Analytics & Progress"
+        ],
+        "summary": "Knowledge Gap Map",
+        "description": "Retrieve topic-level mastery estimates and knowledge gaps.\nTopics are categorized as 'weak', 'developing', 'strong', or 'not_enough_data'.",
+        "operationId": "get_knowledge_gaps_api_v1_analytics_knowledge_gaps_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_KnowledgeGapList_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/misconceptions": {
+      "get": {
+        "tags": [
+          "Analytics & Progress"
+        ],
+        "summary": "Student Misconceptions",
+        "description": "Retrieve diagnosed student misconceptions grounded in actual incorrect answers.",
+        "operationId": "get_misconceptions_api_v1_analytics_misconceptions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_MisconceptionList_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/progress": {
+      "get": {
+        "tags": [
+          "Analytics & Progress"
+        ],
+        "summary": "Overall Learning Progress",
+        "description": "Retrieve overall learning progress, quiz scores, topic trends, and recent activity.",
+        "operationId": "get_progress_api_v1_analytics_progress_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_ProgressData_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/verification": {
+      "post": {
+        "tags": [
+          "Analytics & Progress"
+        ],
+        "summary": "Initiate Diagnostic vs Follow-Up Verification",
+        "description": "Create a verification tracking session comparing an initial diagnostic assessment\nwith a subsequent follow-up assessment on the same topic.",
+        "operationId": "create_verification_api_v1_analytics_verification_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerificationCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_VerificationData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/verification/{verification_id}": {
+      "get": {
+        "tags": [
+          "Analytics & Progress"
+        ],
+        "summary": "Get Assessment Verification Results",
+        "description": "Retrieve comparative results between initial and follow-up assessments.\nAccurately computes score delta if both have been submitted.",
+        "operationId": "get_verification_api_v1_analytics_verification__verification_id__get",
+        "parameters": [
+          {
+            "name": "verification_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Verification Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_VerificationData_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/revision-plan": {
+      "get": {
+        "tags": [
+          "Adaptive Revision Planner"
+        ],
+        "summary": "Get Current Revision Plan",
+        "description": "Retrieve persisted revision tasks prioritized by urgency and topic mastery.",
+        "operationId": "get_revision_plan_api_v1_revision_plan_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RevisionPlanData_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/revision-plan/generate": {
+      "post": {
+        "tags": [
+          "Adaptive Revision Planner"
+        ],
+        "summary": "Generate or Update Adaptive Revision Tasks",
+        "description": "Generate or update recommendations using topic mastery, recent quiz performance,\noutstanding tasks, and previous attempts. Returns a transparent starter plan if no history exists.",
+        "operationId": "generate_revision_plan_api_v1_revision_plan_generate_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RevisionPlanData_"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/revision-plan/{task_id}": {
+      "patch": {
+        "tags": [
+          "Adaptive Revision Planner"
+        ],
+        "summary": "Update Revision Task Status",
+        "description": "Update task status to 'pending', 'in_progress', or 'completed'.",
+        "operationId": "update_task_status_api_v1_revision_plan__task_id__patch",
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Task Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionTaskUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse_RevisionTaskItem_"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActivityItem": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "title": "Type"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "details": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "title",
+          "timestamp"
+        ],
+        "title": "ActivityItem",
+        "description": "Summary of recent student activity."
+      },
+      "AnswerSubmission": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "title": "Question Id",
+            "description": "ID of the question being answered"
+          },
+          "selected_option": {
+            "type": "string",
+            "title": "Selected Option",
+            "description": "Option letter or text selected (e.g. 'A', 'B', 'Option 1')"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "selected_option"
+        ],
+        "title": "AnswerSubmission",
+        "description": "Submitted answer for a specific question."
+      },
+      "ApiResponse_ConfigStatusData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ConfigStatusData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[ConfigStatusData]"
+      },
+      "ApiResponse_HealthData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/HealthData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[HealthData]"
+      },
+      "ApiResponse_KnowledgeGapList_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/KnowledgeGapList"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[KnowledgeGapList]"
+      },
+      "ApiResponse_MaterialContentData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MaterialContentData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[MaterialContentData]"
+      },
+      "ApiResponse_MaterialData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MaterialData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[MaterialData]"
+      },
+      "ApiResponse_MaterialDeleteData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MaterialDeleteData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[MaterialDeleteData]"
+      },
+      "ApiResponse_MaterialDetailData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MaterialDetailData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[MaterialDetailData]"
+      },
+      "ApiResponse_MaterialListResponse_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MaterialListResponse"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[MaterialListResponse]"
+      },
+      "ApiResponse_MisconceptionList_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MisconceptionList"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[MisconceptionList]"
+      },
+      "ApiResponse_ProgressData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ProgressData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[ProgressData]"
+      },
+      "ApiResponse_QuizData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/QuizData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[QuizData]"
+      },
+      "ApiResponse_QuizResultData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/QuizResultData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[QuizResultData]"
+      },
+      "ApiResponse_RevisionPlanData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RevisionPlanData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[RevisionPlanData]"
+      },
+      "ApiResponse_RevisionTaskItem_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RevisionTaskItem"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[RevisionTaskItem]"
+      },
+      "ApiResponse_TutorData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/TutorData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[TutorData]"
+      },
+      "ApiResponse_VerificationData_": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/VerificationData"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/MetaResponse"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data",
+          "meta"
+        ],
+        "title": "ApiResponse[VerificationData]"
+      },
+      "Body_upload_pdf_material_api_v1_materials_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File",
+            "description": "PDF document (up to configured page/size limit)"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title",
+            "description": "Optional title for the study material"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_pdf_material_api_v1_materials_post"
+      },
+      "ConfigStatusData": {
+        "properties": {
+          "gemini_configured": {
+            "type": "boolean",
+            "title": "Gemini Configured",
+            "description": "Whether a Gemini API key is configured"
+          },
+          "model": {
+            "type": "string",
+            "title": "Model",
+            "description": "Configured Gemini model"
+          },
+          "database_status": {
+            "type": "string",
+            "title": "Database Status",
+            "description": "Database connection status"
+          },
+          "max_pdf_pages": {
+            "type": "integer",
+            "title": "Max Pdf Pages",
+            "description": "Maximum allowed pages per uploaded PDF"
+          },
+          "max_upload_mb": {
+            "type": "integer",
+            "title": "Max Upload Mb",
+            "description": "Maximum allowed upload file size in megabytes"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment",
+            "description": "Current deployment environment"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gemini_configured",
+          "model",
+          "database_status",
+          "max_pdf_pages",
+          "max_upload_mb",
+          "environment"
+        ],
+        "title": "ConfigStatusData",
+        "description": "Readiness indicators without exposing sensitive credentials."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthData": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "example": "ok"
+          },
+          "database": {
+            "type": "string",
+            "title": "Database",
+            "example": "connected"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "database",
+          "timestamp"
+        ],
+        "title": "HealthData",
+        "description": "Health check payload."
+      },
+      "KnowledgeGapItem": {
+        "properties": {
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "accuracy": {
+            "type": "number",
+            "title": "Accuracy"
+          },
+          "attempts_count": {
+            "type": "integer",
+            "title": "Attempts Count"
+          },
+          "confidence": {
+            "type": "string",
+            "title": "Confidence"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "recommended_action": {
+            "type": "string",
+            "title": "Recommended Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topic",
+          "accuracy",
+          "attempts_count",
+          "confidence",
+          "status",
+          "recommended_action"
+        ],
+        "title": "KnowledgeGapItem",
+        "description": "Topic mastery indicator with actionable recommendation."
+      },
+      "KnowledgeGapList": {
+        "properties": {
+          "topics": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeGapItem"
+            },
+            "type": "array",
+            "title": "Topics"
+          },
+          "total_topics": {
+            "type": "integer",
+            "title": "Total Topics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topics",
+          "total_topics"
+        ],
+        "title": "KnowledgeGapList",
+        "description": "List of knowledge gaps."
+      },
+      "MaterialChunkItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "page_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Number"
+          },
+          "section_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Reference"
+          },
+          "chunk_position": {
+            "type": "integer",
+            "title": "Chunk Position"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "char_length": {
+            "type": "integer",
+            "title": "Char Length"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "chunk_position",
+          "content",
+          "char_length"
+        ],
+        "title": "MaterialChunkItem",
+        "description": "Chunk representation with source references."
+      },
+      "MaterialContentData": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "material_type": {
+            "type": "string",
+            "title": "Material Type"
+          },
+          "page_count": {
+            "type": "integer",
+            "title": "Page Count"
+          },
+          "chunks": {
+            "items": {
+              "$ref": "#/components/schemas/MaterialChunkItem"
+            },
+            "type": "array",
+            "title": "Chunks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "material_type",
+          "page_count",
+          "chunks"
+        ],
+        "title": "MaterialContentData",
+        "description": "Material extracted content with chunks and page numbers."
+      },
+      "MaterialCreateText": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Title",
+            "description": "Title of the study material"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 10,
+            "title": "Content",
+            "description": "Pasted study text or notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "content"
+        ],
+        "title": "MaterialCreateText",
+        "description": "Payload to submit pasted study notes."
+      },
+      "MaterialData": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "student_id": {
+            "type": "string",
+            "title": "Student Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "material_type": {
+            "type": "string",
+            "title": "Material Type"
+          },
+          "page_count": {
+            "type": "integer",
+            "title": "Page Count"
+          },
+          "char_count": {
+            "type": "integer",
+            "title": "Char Count"
+          },
+          "processing_status": {
+            "type": "string",
+            "title": "Processing Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "student_id",
+          "title",
+          "material_type",
+          "page_count",
+          "char_count",
+          "processing_status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "MaterialData",
+        "description": "Study material summary."
+      },
+      "MaterialDeleteData": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "deleted": {
+            "type": "boolean",
+            "title": "Deleted"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "deleted",
+          "message"
+        ],
+        "title": "MaterialDeleteData",
+        "description": "Material deletion confirmation."
+      },
+      "MaterialDetailData": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "student_id": {
+            "type": "string",
+            "title": "Student Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "material_type": {
+            "type": "string",
+            "title": "Material Type"
+          },
+          "page_count": {
+            "type": "integer",
+            "title": "Page Count"
+          },
+          "char_count": {
+            "type": "integer",
+            "title": "Char Count"
+          },
+          "processing_status": {
+            "type": "string",
+            "title": "Processing Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "chunk_count": {
+            "type": "integer",
+            "title": "Chunk Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "student_id",
+          "title",
+          "material_type",
+          "page_count",
+          "char_count",
+          "processing_status",
+          "created_at",
+          "updated_at",
+          "chunk_count"
+        ],
+        "title": "MaterialDetailData",
+        "description": "Detailed study material including chunk statistics."
+      },
+      "MaterialListResponse": {
+        "properties": {
+          "materials": {
+            "items": {
+              "$ref": "#/components/schemas/MaterialData"
+            },
+            "type": "array",
+            "title": "Materials"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "materials",
+          "total"
+        ],
+        "title": "MaterialListResponse",
+        "description": "List of student study materials with count."
+      },
+      "MetaResponse": {
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "title": "Request Id",
+            "description": "Unique request tracing identifier"
+          }
+        },
+        "type": "object",
+        "required": [
+          "request_id"
+        ],
+        "title": "MetaResponse",
+        "description": "Standard metadata included in all responses."
+      },
+      "MisconceptionItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "misconception_text": {
+            "type": "string",
+            "title": "Misconception Text"
+          },
+          "evidence_question": {
+            "type": "string",
+            "title": "Evidence Question"
+          },
+          "evidence_answer": {
+            "type": "string",
+            "title": "Evidence Answer"
+          },
+          "suggested_practice": {
+            "type": "string",
+            "title": "Suggested Practice"
+          },
+          "confidence": {
+            "type": "string",
+            "title": "Confidence"
+          },
+          "detected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Detected At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "topic",
+          "misconception_text",
+          "evidence_question",
+          "evidence_answer",
+          "suggested_practice",
+          "confidence",
+          "detected_at"
+        ],
+        "title": "MisconceptionItem",
+        "description": "Specific student misconception with concrete evidence."
+      },
+      "MisconceptionList": {
+        "properties": {
+          "misconceptions": {
+            "items": {
+              "$ref": "#/components/schemas/MisconceptionItem"
+            },
+            "type": "array",
+            "title": "Misconceptions"
+          },
+          "total_misconceptions": {
+            "type": "integer",
+            "title": "Total Misconceptions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "misconceptions",
+          "total_misconceptions"
+        ],
+        "title": "MisconceptionList",
+        "description": "List of detected misconceptions."
+      },
+      "ProgressData": {
+        "properties": {
+          "total_materials": {
+            "type": "integer",
+            "title": "Total Materials"
+          },
+          "total_quizzes": {
+            "type": "integer",
+            "title": "Total Quizzes"
+          },
+          "total_attempts": {
+            "type": "integer",
+            "title": "Total Attempts"
+          },
+          "average_score": {
+            "type": "number",
+            "title": "Average Score"
+          },
+          "questions_answered": {
+            "type": "integer",
+            "title": "Questions Answered"
+          },
+          "recent_activity": {
+            "items": {
+              "$ref": "#/components/schemas/ActivityItem"
+            },
+            "type": "array",
+            "title": "Recent Activity"
+          },
+          "topic_trends": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeGapItem"
+            },
+            "type": "array",
+            "title": "Topic Trends"
+          },
+          "verifications": {
+            "items": {
+              "$ref": "#/components/schemas/VerificationData"
+            },
+            "type": "array",
+            "title": "Verifications"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_materials",
+          "total_quizzes",
+          "total_attempts",
+          "average_score",
+          "questions_answered",
+          "recent_activity",
+          "topic_trends",
+          "verifications"
+        ],
+        "title": "ProgressData",
+        "description": "Comprehensive learning progress statistics."
+      },
+      "QuestionEvaluation": {
+        "properties": {
+          "question_id": {
+            "type": "string",
+            "title": "Question Id"
+          },
+          "question_number": {
+            "type": "integer",
+            "title": "Question Number"
+          },
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "selected_option": {
+            "type": "string",
+            "title": "Selected Option"
+          },
+          "correct_option": {
+            "type": "string",
+            "title": "Correct Option"
+          },
+          "is_correct": {
+            "type": "boolean",
+            "title": "Is Correct"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question_id",
+          "question_number",
+          "prompt",
+          "selected_option",
+          "correct_option",
+          "is_correct",
+          "explanation"
+        ],
+        "title": "QuestionEvaluation",
+        "description": "Post-submission evaluation of an individual question."
+      },
+      "QuizCreateRequest": {
+        "properties": {
+          "material_id": {
+            "type": "string",
+            "title": "Material Id",
+            "description": "ID of the study material to generate questions from"
+          },
+          "quiz_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quiz Type",
+            "description": "Type of quiz: 'diagnostic', 'practice', or 'follow_up'",
+            "default": "practice"
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic",
+            "description": "Optional specific topic to focus on"
+          },
+          "question_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 15.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question Count",
+            "description": "Number of questions to generate (1-15)",
+            "default": 5
+          },
+          "difficulty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Difficulty",
+            "description": "Difficulty level: 'easy', 'medium', or 'hard'",
+            "default": "medium"
+          }
+        },
+        "type": "object",
+        "required": [
+          "material_id"
+        ],
+        "title": "QuizCreateRequest",
+        "description": "Payload to generate a new quiz."
+      },
+      "QuizData": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "material_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Material Id"
+          },
+          "quiz_type": {
+            "type": "string",
+            "title": "Quiz Type"
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic"
+          },
+          "difficulty": {
+            "type": "string",
+            "title": "Difficulty"
+          },
+          "question_count": {
+            "type": "integer",
+            "title": "Question Count"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/QuizQuestionPublic"
+            },
+            "type": "array",
+            "title": "Questions"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "quiz_type",
+          "difficulty",
+          "question_count",
+          "questions",
+          "created_at"
+        ],
+        "title": "QuizData",
+        "description": "Quiz session details presented to the student."
+      },
+      "QuizQuestionPublic": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "question_number": {
+            "type": "integer",
+            "title": "Question Number"
+          },
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "question_type": {
+            "type": "string",
+            "title": "Question Type"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Options"
+          },
+          "topic": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Topic"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "question_number",
+          "prompt",
+          "question_type",
+          "options"
+        ],
+        "title": "QuizQuestionPublic",
+        "description": "Public question representation that strictly conceals correct answers."
+      },
+      "QuizResultData": {
+        "properties": {
+          "quiz_id": {
+            "type": "string",
+            "title": "Quiz Id"
+          },
+          "attempt_id": {
+            "type": "string",
+            "title": "Attempt Id"
+          },
+          "total_questions": {
+            "type": "integer",
+            "title": "Total Questions"
+          },
+          "correct_count": {
+            "type": "integer",
+            "title": "Correct Count"
+          },
+          "score_percentage": {
+            "type": "number",
+            "title": "Score Percentage"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/QuestionEvaluation"
+            },
+            "type": "array",
+            "title": "Questions"
+          },
+          "topic_performance": {
+            "items": {
+              "$ref": "#/components/schemas/TopicPerformance"
+            },
+            "type": "array",
+            "title": "Topic Performance"
+          },
+          "recommended_next_action": {
+            "type": "string",
+            "title": "Recommended Next Action"
+          },
+          "updated_mastery": {
+            "items": {
+              "$ref": "#/components/schemas/UpdatedMasteryIndicator"
+            },
+            "type": "array",
+            "title": "Updated Mastery"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quiz_id",
+          "attempt_id",
+          "total_questions",
+          "correct_count",
+          "score_percentage",
+          "questions",
+          "topic_performance",
+          "recommended_next_action",
+          "updated_mastery"
+        ],
+        "title": "QuizResultData",
+        "description": "Complete grading results and feedback for a submitted quiz attempt."
+      },
+      "QuizSubmitRequest": {
+        "properties": {
+          "answers": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerSubmission"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Answers",
+            "description": "List of submitted question answers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answers"
+        ],
+        "title": "QuizSubmitRequest",
+        "description": "List of submitted answers for a quiz."
+      },
+      "RevisionPlanData": {
+        "properties": {
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/RevisionTaskItem"
+            },
+            "type": "array",
+            "title": "Tasks"
+          },
+          "total_tasks": {
+            "type": "integer",
+            "title": "Total Tasks"
+          },
+          "pending_tasks": {
+            "type": "integer",
+            "title": "Pending Tasks"
+          },
+          "completed_tasks": {
+            "type": "integer",
+            "title": "Completed Tasks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tasks",
+          "total_tasks",
+          "pending_tasks",
+          "completed_tasks"
+        ],
+        "title": "RevisionPlanData",
+        "description": "Personalised revision plan collection."
+      },
+      "RevisionTaskItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          },
+          "suggested_activity": {
+            "type": "string",
+            "title": "Suggested Activity"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "due_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due Date"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "topic",
+          "priority",
+          "reason",
+          "suggested_activity",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RevisionTaskItem",
+        "description": "Individual revision task."
+      },
+      "RevisionTaskUpdate": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "pattern": "^(pending|in_progress|completed)$",
+            "title": "Status",
+            "description": "New task status: 'pending', 'in_progress', or 'completed'"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "RevisionTaskUpdate",
+        "description": "Payload to update revision task status."
+      },
+      "SourceReference": {
+        "properties": {
+          "page_number": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Number",
+            "description": "Page number for PDF documents"
+          },
+          "section_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Section Reference",
+            "description": "Section or paragraph reference for notes"
+          },
+          "excerpt": {
+            "type": "string",
+            "title": "Excerpt",
+            "description": "Supporting excerpt directly from the source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "excerpt"
+        ],
+        "title": "SourceReference",
+        "description": "Citation reference back to the student's study material."
+      },
+      "TopicPerformance": {
+        "properties": {
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "correct": {
+            "type": "integer",
+            "title": "Correct"
+          },
+          "percentage": {
+            "type": "number",
+            "title": "Percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topic",
+          "total",
+          "correct",
+          "percentage"
+        ],
+        "title": "TopicPerformance",
+        "description": "Topic-specific score breakdown within a quiz attempt."
+      },
+      "TutorAskRequest": {
+        "properties": {
+          "material_id": {
+            "type": "string",
+            "title": "Material Id",
+            "description": "ID of the study material to ground the answer in"
+          },
+          "question": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 2,
+            "title": "Question",
+            "description": "Question asked by the student"
+          },
+          "learning_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Learning Level",
+            "description": "Target explanation level: 'beginner', 'intermediate', or 'advanced'",
+            "default": "intermediate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "material_id",
+          "question"
+        ],
+        "title": "TutorAskRequest",
+        "description": "Student query payload for the AI Tutor."
+      },
+      "TutorData": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "title": "Answer",
+            "description": "Grounded explanation or explicit abstention message"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceReference"
+            },
+            "type": "array",
+            "title": "Sources",
+            "description": "Verified source citations"
+          },
+          "grounded": {
+            "type": "boolean",
+            "title": "Grounded",
+            "description": "True if answer is directly derived from supplied material"
+          },
+          "insufficient_evidence": {
+            "type": "boolean",
+            "title": "Insufficient Evidence",
+            "description": "True if supplied material lacked sufficient information"
+          },
+          "follow_up_questions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Follow Up Questions",
+            "description": "Relevant questions to deepen understanding"
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer",
+          "grounded",
+          "insufficient_evidence"
+        ],
+        "title": "TutorData",
+        "description": "Structured response from the grounded AI Tutor."
+      },
+      "UpdatedMasteryIndicator": {
+        "properties": {
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "accuracy": {
+            "type": "number",
+            "title": "Accuracy"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "confidence": {
+            "type": "string",
+            "title": "Confidence"
+          },
+          "recommended_action": {
+            "type": "string",
+            "title": "Recommended Action"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topic",
+          "accuracy",
+          "status",
+          "confidence",
+          "recommended_action"
+        ],
+        "title": "UpdatedMasteryIndicator",
+        "description": "Real-time update on student mastery for a topic."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "VerificationCreateRequest": {
+        "properties": {
+          "topic": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 2,
+            "title": "Topic",
+            "description": "Topic to verify learning improvement for"
+          },
+          "material_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Material Id",
+            "description": "Optional associated study material ID"
+          }
+        },
+        "type": "object",
+        "required": [
+          "topic"
+        ],
+        "title": "VerificationCreateRequest",
+        "description": "Request to initiate a diagnostic vs follow-up assessment verification."
+      },
+      "VerificationData": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "topic": {
+            "type": "string",
+            "title": "Topic"
+          },
+          "material_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Material Id"
+          },
+          "diagnostic_quiz_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Diagnostic Quiz Id"
+          },
+          "follow_up_quiz_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Follow Up Quiz Id"
+          },
+          "initial_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Initial Score"
+          },
+          "follow_up_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Follow Up Score"
+          },
+          "score_difference": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score Difference"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "assessment_ids": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": "object",
+            "title": "Assessment Ids"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "topic",
+          "status",
+          "assessment_ids",
+          "message"
+        ],
+        "title": "VerificationData",
+        "description": "Initial vs follow-up assessment score comparison."
+      }
+    }
+  }
+}
