@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -7,13 +7,9 @@ import {
   CheckSquare,
   ListTodo,
   TrendingUp,
-  Settings,
   GraduationCap,
-  Wifi,
-  WifiOff,
   User,
 } from 'lucide-react';
-import { systemApi } from '@/api/system';
 import { useStudent } from '@/context/StudentContext';
 
 interface NavItem {
@@ -28,26 +24,6 @@ export const Sidebar: React.FC<{ className?: string; onClose?: () => void }> = (
   onClose,
 }) => {
   const { student } = useStudent();
-  const [isBackendHealthy, setIsBackendHealthy] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let isMounted = true;
-    const checkBackend = async () => {
-      try {
-        const res = await systemApi.getHealth();
-        if (isMounted) setIsBackendHealthy(res.status === 'ok');
-      } catch {
-        if (isMounted) setIsBackendHealthy(false);
-      }
-    };
-
-    checkBackend();
-    const interval = setInterval(checkBackend, 20000); // Check every 20 seconds
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, []);
 
   const navItems: NavItem[] = [
     { to: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="w-4 h-4" /> },
@@ -56,7 +32,6 @@ export const Sidebar: React.FC<{ className?: string; onClose?: () => void }> = (
     { to: '/quizzes', label: 'Quiz & Practice', icon: <CheckSquare className="w-4 h-4" /> },
     { to: '/knowledge', label: 'Knowledge & Revision', icon: <ListTodo className="w-4 h-4" /> },
     { to: '/progress', label: 'Progress & Analytics', icon: <TrendingUp className="w-4 h-4" /> },
-    { to: '/settings', label: 'Settings', icon: <Settings className="w-4 h-4" /> },
   ];
 
   return (
@@ -66,7 +41,7 @@ export const Sidebar: React.FC<{ className?: string; onClose?: () => void }> = (
       {/* Top Header / Logo */}
       <div className="p-5 border-b border-[var(--border-subtle)]">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)] text-white flex items-center justify-center shadow-md">
+          <div className="w-10 h-10 rounded-xl bg-[var(--accent-primary)] text-white flex items-center justify-center shadow-sm">
             <GraduationCap className="w-5 h-5" />
           </div>
           <div>
@@ -114,46 +89,20 @@ export const Sidebar: React.FC<{ className?: string; onClose?: () => void }> = (
         ))}
       </nav>
 
-      {/* Bottom Footer: Backend Connectivity & Active Student */}
-      <div className="p-4 border-t border-[var(--border-subtle)] space-y-3 bg-[var(--bg-secondary)]/30">
-        {/* Backend Connection Indicator */}
-        <div className="flex items-center justify-between text-xs px-2 py-1.5 rounded-lg bg-[var(--bg-card)] border border-[var(--border-card)]">
-          <div className="flex items-center gap-2">
-            <span
-              className={`w-2 h-2 rounded-full ${
-                isBackendHealthy === null
-                  ? 'bg-amber-400 animate-pulse'
-                  : isBackendHealthy
-                  ? 'bg-emerald-500'
-                  : 'bg-rose-500'
-              }`}
-            />
-            <span className="font-medium text-[var(--text-secondary)] text-[11px]">
-              {isBackendHealthy === null
-                ? 'Connecting backend...'
-                : isBackendHealthy
-                ? 'Backend Connected'
-                : 'Backend Disconnected'}
-            </span>
-          </div>
-          {isBackendHealthy ? (
-            <Wifi className="w-3.5 h-3.5 text-emerald-500" />
-          ) : (
-            <WifiOff className="w-3.5 h-3.5 text-rose-500" />
-          )}
-        </div>
-
-        {/* Active Student Pill */}
+      {/* Bottom Footer: Compact Student Identity Display */}
+      <div className="p-4 border-t border-[var(--border-subtle)] bg-[var(--bg-secondary)]/30">
         <div className="flex items-center gap-3 p-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-card)]">
           <div className="w-8 h-8 rounded-lg bg-[var(--accent-subtle)] border border-[var(--accent-border)] flex items-center justify-center text-[var(--accent-primary)] text-xs font-bold shrink-0">
             {student.avatarInitials || <User className="w-4 h-4" />}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-semibold text-[var(--text-primary)] truncate">{student.name}</p>
-            <p className="text-[11px] text-[var(--text-secondary)] truncate">{student.id}</p>
+            <p className="text-[11px] text-[var(--text-secondary)] truncate">{student.email}</p>
           </div>
         </div>
       </div>
     </aside>
   );
 };
+
+export default Sidebar;

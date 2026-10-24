@@ -94,7 +94,7 @@ export const DashboardScreen: React.FC = () => {
         <div className="relative z-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>AI-Powered Active Learning Session</span>
+            <span>AI-powered active learning session</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Welcome back, {student.name}
@@ -111,7 +111,7 @@ export const DashboardScreen: React.FC = () => {
               icon={<Plus className="w-4 h-4" />}
               className="bg-white text-[var(--accent-primary)] hover:bg-white/90 border-transparent shadow-md"
             >
-              Upload Material
+              Upload material
             </Button>
             <Button
               onClick={() => navigate('/tutor')}
@@ -120,7 +120,7 @@ export const DashboardScreen: React.FC = () => {
               icon={<Bot className="w-4 h-4" />}
               className="text-white border-white/40 hover:bg-white/10 hover:border-white"
             >
-              Ask AI Tutor
+              Ask AI tutor
             </Button>
             <Button
               onClick={() => navigate('/quizzes')}
@@ -129,7 +129,7 @@ export const DashboardScreen: React.FC = () => {
               icon={<CheckSquare className="w-4 h-4" />}
               className="text-white border-white/40 hover:bg-white/10 hover:border-white"
             >
-              Practice Quiz
+              Practice quiz
             </Button>
           </div>
         </div>
@@ -142,28 +142,28 @@ export const DashboardScreen: React.FC = () => {
       {/* Live Metric Cards based on REAL backend data */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Study Materials"
+          label="Study materials"
           value={progress?.total_materials ?? materials.length}
           icon={<FolderOpen className="w-5 h-5" />}
           hint="Indexed PDF documents & notes"
           onClick={() => navigate('/materials')}
         />
         <StatCard
-          label="Quizzes Taken"
+          label="Quizzes taken"
           value={progress?.total_attempts ?? 0}
           icon={<CheckSquare className="w-5 h-5" />}
           hint={`${progress?.questions_answered ?? 0} questions answered`}
           onClick={() => navigate('/quizzes')}
         />
         <StatCard
-          label="Average Score"
+          label="Average score"
           value={`${progress?.average_score ?? 0}%`}
           icon={<TrendingUp className="w-5 h-5" />}
           hint={progress?.total_attempts ? 'Calculated across all attempts' : 'Take a quiz to calculate'}
           onClick={() => navigate('/progress')}
         />
         <StatCard
-          label="Pending Tasks"
+          label="Pending tasks"
           value={revisionPlan?.pending_tasks ?? 0}
           icon={<ListTodo className="w-5 h-5" />}
           hint={`${revisionPlan?.completed_tasks ?? 0} completed so far`}
@@ -178,7 +178,7 @@ export const DashboardScreen: React.FC = () => {
           {/* Recent Study Materials Card */}
           <Card>
             <CardHeader
-              title="Recent Study Materials"
+              title="Recent study materials"
               subtitle="Quickly access uploaded resources or start grounded Q&A"
               action={
                 <Button
@@ -187,7 +187,7 @@ export const DashboardScreen: React.FC = () => {
                   size="sm"
                   icon={<ArrowRight className="w-3.5 h-3.5" />}
                 >
-                  View Library
+                  View library
                 </Button>
               }
             />
@@ -197,7 +197,7 @@ export const DashboardScreen: React.FC = () => {
                   icon={<FolderOpen className="w-6 h-6" />}
                   title="No study materials yet"
                   description="Upload your first textbook chapter or paste study notes to get started."
-                  actionLabel="Upload Material"
+                  actionLabel="Upload material"
                   onAction={() => navigate('/materials')}
                 />
               ) : (
@@ -234,7 +234,7 @@ export const DashboardScreen: React.FC = () => {
                           size="sm"
                           icon={<Bot className="w-3.5 h-3.5" />}
                         >
-                          Ask Tutor
+                          Ask tutor
                         </Button>
                         <Button
                           onClick={() => navigate('/quizzes', { state: { materialId: m.id, topic: m.title } })}
@@ -255,7 +255,7 @@ export const DashboardScreen: React.FC = () => {
           {/* Active Revision Recommendations */}
           <Card>
             <CardHeader
-              title="Adaptive Revision Recommendations"
+              title="Adaptive revision recommendations"
               subtitle="Prioritized tasks generated from your actual quiz weaknesses"
               action={
                 <Button
@@ -264,7 +264,7 @@ export const DashboardScreen: React.FC = () => {
                   size="sm"
                   icon={<ArrowRight className="w-3.5 h-3.5" />}
                 >
-                  All Tasks
+                  All tasks
                 </Button>
               }
             />
@@ -274,7 +274,7 @@ export const DashboardScreen: React.FC = () => {
                   icon={<ListTodo className="w-6 h-6" />}
                   title="No pending revision tasks"
                   description="Complete a practice quiz to generate personalized recommendations."
-                  actionLabel="Take a Quiz"
+                  actionLabel="Take a quiz"
                   onAction={() => navigate('/quizzes')}
                 />
               ) : (
@@ -363,7 +363,7 @@ export const DashboardScreen: React.FC = () => {
           {/* Knowledge Gap Highlights */}
           <Card>
             <CardHeader
-              title="Topic Mastery Map"
+              title="Topic mastery map"
               subtitle="Real calibration from your submitted attempts"
               action={
                 <Button
@@ -382,7 +382,7 @@ export const DashboardScreen: React.FC = () => {
                   icon={<TrendingUp className="w-6 h-6" />}
                   title="No topic data yet"
                   description="Submit quizzes to map your strengths and gaps."
-                  actionLabel="Start Quiz"
+                  actionLabel="Start quiz"
                   onAction={() => navigate('/quizzes')}
                 />
               ) : (
@@ -403,7 +403,13 @@ export const DashboardScreen: React.FC = () => {
                           }
                           size="sm"
                         >
-                          {gap.status.replace('_', ' ')}
+                          {gap.status === 'weak'
+                            ? 'Weak'
+                            : gap.status === 'developing'
+                            ? 'Developing'
+                            : gap.status === 'strong'
+                            ? 'Strong'
+                            : gap.status.replace('_', ' ')}
                         </Badge>
                       </div>
                       <div className="w-full bg-[var(--bg-secondary)] h-2 rounded-full overflow-hidden">
@@ -432,7 +438,7 @@ export const DashboardScreen: React.FC = () => {
           {/* Recent Activity Timeline */}
           <Card>
             <CardHeader
-              title="Recent Activity"
+              title="Recent activity"
               subtitle="Real timestamped events"
             />
             <CardContent>

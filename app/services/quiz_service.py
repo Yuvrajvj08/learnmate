@@ -206,9 +206,12 @@ Return a valid JSON object matching this exact schema:
             correct_norm = normalize_option(q.correct_option)
 
             # Check correctness: match normalized letter or full option text match
-            is_correct = (
-                selected_norm == correct_norm
-                or (selected_raw and selected_raw.lower() == q.correct_option.lower())
+            is_correct = bool(
+                selected_raw
+                and (
+                    selected_norm == correct_norm
+                    or selected_raw.lower() == q.correct_option.lower()
+                )
             )
 
             if is_correct:

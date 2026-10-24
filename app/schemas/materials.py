@@ -9,6 +9,11 @@ class MaterialCreateText(BaseModel):
     content: str = Field(..., min_length=10, description="Pasted study text or notes")
 
 
+class MaterialUpdate(BaseModel):
+    """Payload to update study material metadata (such as renaming title)."""
+    title: str = Field(..., min_length=1, max_length=256, description="Updated title of the study material")
+
+
 class MaterialChunkItem(BaseModel):
     """Chunk representation with source references."""
     id: str

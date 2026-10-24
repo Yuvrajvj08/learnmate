@@ -19,7 +19,7 @@ export const Badge: React.FC<BadgeProps> = ({
 }) => {
   const variantStyles: Record<BadgeVariant, { bg: string; dotBg: string }> = {
     default: {
-      bg: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700',
+      bg: 'bg-slate-100 text-slate-700 border border-slate-200',
       dotBg: 'bg-slate-500',
     },
     accent: {
@@ -27,19 +27,19 @@ export const Badge: React.FC<BadgeProps> = ({
       dotBg: 'bg-[var(--accent-primary)]',
     },
     success: {
-      bg: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60',
+      bg: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
       dotBg: 'bg-emerald-500',
     },
     warning: {
-      bg: 'bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800/60',
+      bg: 'bg-amber-50 text-amber-700 border border-amber-200',
       dotBg: 'bg-amber-500',
     },
     danger: {
-      bg: 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800/60',
+      bg: 'bg-rose-50 text-rose-700 border border-rose-200',
       dotBg: 'bg-rose-500',
     },
     neutral: {
-      bg: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700',
+      bg: 'bg-zinc-100 text-zinc-600 border border-zinc-200',
       dotBg: 'bg-zinc-400',
     },
   };

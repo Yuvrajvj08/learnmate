@@ -27,5 +27,5 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 };
 
 export const Skeleton: React.FC<{ className?: string }> = ({ className = 'h-4 w-full' }) => (
-  <div className={`animate-pulse rounded-md bg-slate-200 dark:bg-slate-800 ${className}`} />
+  <div className={`animate-pulse rounded-md bg-slate-200 ${className}`} />
 );

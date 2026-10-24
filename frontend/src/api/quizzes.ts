@@ -4,6 +4,7 @@ import type {
   QuizData,
   QuizSubmitRequest,
   QuizResultData,
+  QuizAttemptItem,
 } from './types';
 
 export const quizzesApi = {
@@ -32,6 +33,13 @@ export const quizzesApi = {
    */
   getById: async (quizId: string): Promise<QuizData> => {
     return api.get<QuizData>(`/quizzes/${quizId}`);
+  },
+
+  /**
+   * Retrieve recent quiz attempts for the student.
+   */
+  getRecentAttempts: async (limit: number = 5): Promise<QuizAttemptItem[]> => {
+    return api.get<QuizAttemptItem[]>('/quizzes/attempts/recent', { limit });
   },
 
   /**

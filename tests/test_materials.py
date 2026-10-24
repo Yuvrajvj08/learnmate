@@ -106,3 +106,25 @@ def test_delete_material(client: TestClient):
     # Confirm 404 afterwards
     get_res = client.get(f"/api/v1/materials/{mat_id}")
     assert get_res.status_code == 404
+
+
+def test_rename_material(client: TestClient):
+    """Test renaming a study material title."""
+    create_res = client.post(
+        "/api/v1/materials/text",
+        json={"title": "Original Title", "content": "Important material content for testing."},
+    )
+    assert create_res.status_code == 201
+    mat_id = create_res.json()["data"]["id"]
+
+    # Rename
+    rename_res = client.patch(f"/api/v1/materials/{mat_id}", json={"title": "Updated Brand New Title"})
+    assert rename_res.status_code == 200
+    res_data = rename_res.json()["data"]
+    assert res_data["title"] == "Updated Brand New Title"
+    assert res_data["id"] == mat_id
+
+    # Verify via GET
+    get_res = client.get(f"/api/v1/materials/{mat_id}")
+    assert get_res.status_code == 200
+    assert get_res.json()["data"]["title"] == "Updated Brand New Title"

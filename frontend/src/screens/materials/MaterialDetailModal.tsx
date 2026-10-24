@@ -79,7 +79,7 @@ export const MaterialDetailModal: React.FC<MaterialDetailModalProps> = ({
             </Badge>
             <span className="text-[var(--text-secondary)]">•</span>
             <span className="text-[var(--text-secondary)]">
-              Status: <span className="font-semibold text-emerald-600 dark:text-emerald-400 capitalize">{detail?.processing_status}</span>
+              Status: <span className="font-semibold text-emerald-600 capitalize">{detail?.processing_status}</span>
             </span>
           </div>
 

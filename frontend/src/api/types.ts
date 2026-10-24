@@ -185,6 +185,17 @@ export interface QuizResultData {
   updated_mastery: UpdatedMasteryIndicator[];
 }
 
+export interface QuizAttemptItem {
+  id: string;
+  quiz_id: string;
+  quiz_type: string;
+  topic: string;
+  total_questions: number;
+  correct_count: number;
+  score_percentage: number;
+  submitted_at: string;
+}
+
 // ---------------- Analytics & Progress ----------------
 export interface KnowledgeGapItem {
   topic: string;

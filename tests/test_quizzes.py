@@ -108,3 +108,40 @@ def test_reject_invalid_and_duplicate_submission(client: TestClient, mock_gemini
     inv_res = client.post(f"/api/v1/quizzes/{quiz_id}/submit", json=invalid_payload)
     assert inv_res.status_code == 400
     assert inv_res.json()["error"]["code"] == "INVALID_SUBMISSION"
+
+
+def test_recent_quiz_attempts(client: TestClient, mock_gemini):
+    """Test fetching recent quiz attempts."""
+    # Create material and quiz
+    mat_res = client.post(
+        "/api/v1/materials/text",
+        json={"title": "Genetics", "content": "DNA is composed of four nucleotide bases: A, T, C, G."},
+    )
+    mat_id = mat_res.json()["data"]["id"]
+
+    quiz_res = client.post("/api/v1/quizzes", json={"material_id": mat_id, "question_count": 2})
+    quiz_id = quiz_res.json()["data"]["id"]
+    q_id = quiz_res.json()["data"]["questions"][0]["id"]
+
+    # Submit
+    questions = quiz_res.json()["data"]["questions"]
+    client.post(
+        f"/api/v1/quizzes/{quiz_id}/submit",
+        json={
+            "answers": [
+                {"question_id": questions[0]["id"], "selected_option": "A"},
+                {"question_id": questions[1]["id"], "selected_option": "B"},
+            ]
+        },
+    )
+
+    # Fetch recent attempts
+    recent_res = client.get("/api/v1/quizzes/attempts/recent?limit=5")
+    assert recent_res.status_code == 200
+    data = recent_res.json()["data"]
+    assert isinstance(data, list)
+    assert len(data) >= 1
+    first = data[0]
+    assert "score_percentage" in first
+    assert "quiz_type" in first
+    assert "total_questions" in first

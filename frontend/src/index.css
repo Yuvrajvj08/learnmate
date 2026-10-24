@@ -1,14 +1,13 @@
 @import "tailwindcss";
 
 @layer base {
-  /* Default Light Mode Variables */
+  /* LearnMate Clean Light Theme with Pink Brand Identity */
   :root,
-  html.light,
-  [data-theme="light"] {
+  html {
     --bg-main: #F8FAFC;
     --bg-secondary: #F1F5F9;
     --bg-card: #FFFFFF;
-    --bg-card-hover: #F8FAFC;
+    --bg-card-hover: #FDF2F8;
     --bg-sidebar: #FFFFFF;
     --border-card: #E2E8F0;
     --border-subtle: #F1F5F9;
@@ -17,31 +16,18 @@
     --text-secondary: #475569;
     --text-muted: #94A3B8;
 
-    --glass-bg: rgba(255, 255, 255, 0.85);
+    --glass-bg: rgba(255, 255, 255, 0.88);
     --glass-border: rgba(226, 232, 240, 0.8);
-    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 10px 25px -5px rgba(0, 0, 0, 0.04);
-    --card-shadow-hover: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 4px 10px -2px rgba(0, 0, 0, 0.03);
-  }
+    --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 6px 16px -4px rgba(0, 0, 0, 0.03);
+    --card-shadow-hover: 0 8px 25px -4px rgba(219, 39, 119, 0.12), 0 3px 8px -2px rgba(0, 0, 0, 0.03);
 
-  /* Dark Mode Variables */
-  html.dark,
-  [data-theme="dark"] {
-    --bg-main: #0B0F19;
-    --bg-secondary: #111827;
-    --bg-card: #151D30;
-    --bg-card-hover: #1C263F;
-    --bg-sidebar: #0E1424;
-    --border-card: #1F293D;
-    --border-subtle: #162035;
-    
-    --text-primary: #F8FAFC;
-    --text-secondary: #94A3B8;
-    --text-muted: #64748B;
-
-    --glass-bg: rgba(21, 29, 48, 0.82);
-    --glass-border: rgba(31, 41, 61, 0.7);
-    --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
-    --card-shadow-hover: 0 12px 30px -5px rgba(0, 0, 0, 0.6), 0 0 20px var(--accent-glow);
+    /* Fixed LearnMate Pink Brand Accent */
+    --accent-primary: #DB2777;
+    --accent-secondary: #F472B6;
+    --accent-hover: #BE185D;
+    --accent-subtle: rgba(219, 39, 119, 0.08);
+    --accent-border: rgba(219, 39, 119, 0.22);
+    --accent-glow: rgba(219, 39, 119, 0.20);
   }
 
   body {
@@ -52,7 +38,6 @@
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
     overflow-x: hidden;
-    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }
 

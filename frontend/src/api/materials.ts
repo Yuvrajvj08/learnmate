@@ -56,6 +56,13 @@ export const materialsApi = {
   },
 
   /**
+   * Rename study material title.
+   */
+  rename: async (id: string, title: string): Promise<MaterialData> => {
+    return api.patch<MaterialData>(`/materials/${id}`, { title: title.trim() });
+  },
+
+  /**
    * Delete study material and associated chunks.
    */
   delete: async (id: string): Promise<MaterialDeleteData> => {

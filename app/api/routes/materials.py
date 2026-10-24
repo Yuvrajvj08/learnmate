@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile, status
 from sqlalchemy.orm import Session
@@ -16,6 +17,7 @@ from app.schemas.materials import (
     MaterialDeleteData,
     MaterialDetailData,
     MaterialListResponse,
+    MaterialUpdate,
 )
 from app.services.document_service import DocumentService
 
@@ -220,6 +222,46 @@ def get_material_content(
         material_type=material.material_type,
         page_count=material.page_count,
         chunks=chunk_items,
+    )
+    return success_response(data.model_dump(), request)
+
+
+@router.patch(
+    "/{material_id}",
+    response_model=ApiResponse[MaterialData],
+    summary="Rename Study Material Title",
+)
+def update_material_title(
+    material_id: str,
+    payload: MaterialUpdate,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    """Update title of an existing study material for the student."""
+    material = (
+        db.query(models.StudyMaterial)
+        .filter_by(id=material_id, student_id=settings.DEMO_STUDENT_ID)
+        .first()
+    )
+    if not material:
+        raise MaterialNotFoundError(material_id)
+
+    clean_title = payload.title.strip()
+    material.title = clean_title
+    material.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(material)
+
+    data = MaterialData(
+        id=material.id,
+        student_id=material.student_id,
+        title=material.title,
+        material_type=material.material_type,
+        page_count=material.page_count,
+        char_count=material.char_count,
+        processing_status=material.processing_status,
+        created_at=material.created_at,
+        updated_at=material.updated_at,
     )
     return success_response(data.model_dump(), request)
 

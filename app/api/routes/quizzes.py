@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, Request, status
+from typing import List
+from fastapi import APIRouter, Depends, Query, Request, status
 from sqlalchemy.orm import Session
 
 from app.api.response_utils import success_response
@@ -8,6 +9,7 @@ from app.db import models
 from app.db.database import get_db
 from app.schemas.common import ApiResponse
 from app.schemas.quizzes import (
+    QuizAttemptItem,
     QuizCreateRequest,
     QuizData,
     QuizQuestionPublic,
@@ -68,6 +70,40 @@ def create_quiz(
         created_at=quiz.created_at,
     )
     return success_response(quiz_data.model_dump(), request)
+
+
+@router.get(
+    "/attempts/recent",
+    response_model=ApiResponse[List[QuizAttemptItem]],
+    summary="List Recent Quiz Attempts",
+)
+def list_recent_attempts(
+    request: Request,
+    limit: int = Query(10, ge=1, le=50),
+    db: Session = Depends(get_db),
+):
+    """Retrieve recent quiz attempts for the demo student."""
+    attempts = (
+        db.query(models.QuizAttempt)
+        .filter_by(student_id=settings.DEMO_STUDENT_ID)
+        .order_by(models.QuizAttempt.submitted_at.desc())
+        .limit(limit)
+        .all()
+    )
+    items = [
+        QuizAttemptItem(
+            id=a.id,
+            quiz_id=a.quiz_id,
+            quiz_type=a.quiz.quiz_type if a.quiz else "practice",
+            topic=a.quiz.topic if a.quiz and a.quiz.topic else "General Review",
+            total_questions=a.total_questions,
+            correct_count=a.correct_count,
+            score_percentage=round(a.score_percentage, 1),
+            submitted_at=a.submitted_at,
+        )
+        for a in attempts
+    ]
+    return success_response([item.model_dump() for item in items], request)
 
 
 @router.get(

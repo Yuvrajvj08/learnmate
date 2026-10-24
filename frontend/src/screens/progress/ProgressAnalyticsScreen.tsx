@@ -1,16 +1,15 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   TrendingUp,
-  Award,
-  CheckCircle2,
   FolderOpen,
   CheckSquare,
-  Clock,
-  ArrowUpRight,
+  AlertTriangle,
   ArrowRight,
   Plus,
   Scale,
+  Sparkles,
+  ArrowUpRight,
 } from 'lucide-react';
 import {
   BarChart,
@@ -20,9 +19,11 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  Cell,
 } from 'recharts';
 import { analyticsApi } from '@/api/analytics';
-import type { ProgressData, VerificationData } from '@/api/types';
+import { revisionApi } from '@/api/revision';
+import type { ProgressData, RevisionTaskItem } from '@/api/types';
 import { Card, CardHeader, CardContent } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
@@ -31,27 +32,34 @@ import { StatCard } from '@/components/common/StatCard';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
 import { EmptyState } from '@/components/common/EmptyState';
-import { useTheme } from '@/context/ThemeContext';
 
 export const ProgressAnalyticsScreen: React.FC = () => {
   const navigate = useNavigate();
-  const { accentConfig } = useTheme();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<ProgressData | null>(null);
+  const [nextRevisionTask, setNextRevisionTask] = useState<RevisionTaskItem | null>(null);
 
   // New Verification Modal
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
   const [verificationTopic, setVerificationTopic] = useState('');
   const [isSubmittingVerification, setIsSubmittingVerification] = useState(false);
 
-  const loadProgress = useCallback(async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await analyticsApi.getProgress();
-      setProgress(res);
+      const [progRes, planRes] = await Promise.all([
+        analyticsApi.getProgress(),
+        revisionApi.getPlan().catch(() => null),
+      ]);
+      setProgress(progRes);
+
+      if (planRes && planRes.tasks) {
+        const pending = planRes.tasks.find((t) => t.status !== 'completed');
+        setNextRevisionTask(pending || null);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to load progress analytics.');
     } finally {
@@ -60,8 +68,8 @@ export const ProgressAnalyticsScreen: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    loadProgress();
-  }, [loadProgress]);
+    loadData();
+  }, [loadData]);
 
   const handleCreateVerification = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +81,7 @@ export const ProgressAnalyticsScreen: React.FC = () => {
       await analyticsApi.createVerification({ topic: verificationTopic.trim() });
       setIsVerificationModalOpen(false);
       setVerificationTopic('');
-      await loadProgress();
+      await loadData();
     } catch (err: any) {
       setError(err.message || 'Failed to initiate verification tracking.');
     } finally {
@@ -81,98 +89,229 @@ export const ProgressAnalyticsScreen: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <LoadingSpinner label="Compiling verified learning analytics..." size="lg" className="py-20" />;
-  }
+  // Up to 5 weakest topics, sorted from weakest to strongest (lowest accuracy first)
+  const weakestTopics = useMemo(() => {
+    const topics = progress?.topic_trends || [];
+    return [...topics]
+      .sort((a, b) => a.accuracy - b.accuracy)
+      .slice(0, 5)
+      .map((t) => ({
+        topic: t.topic,
+        displayName: t.topic.length > 22 ? `${t.topic.slice(0, 20)}...` : t.topic,
+        accuracy: Math.round(t.accuracy),
+        attempts: t.attempts_count,
+        status: t.status,
+      }));
+  }, [progress]);
 
-  const chartData = (progress?.topic_trends || []).map((t) => ({
-    name: t.topic,
-    accuracy: Math.round(t.accuracy),
-    attempts: t.attempts_count,
-  }));
+  // Weak topics remaining: topics with status === 'weak' or accuracy < 50%
+  const weakTopicsCount = useMemo(() => {
+    const topics = progress?.topic_trends || [];
+    return topics.filter((t) => t.status === 'weak' || t.accuracy < 50).length;
+  }, [progress]);
+
+  // Next best action data
+  const nextAction = useMemo(() => {
+    if (nextRevisionTask) {
+      return {
+        title: nextRevisionTask.title,
+        description: nextRevisionTask.suggested_activity,
+        badge: `${nextRevisionTask.priority} priority`,
+        badgeVariant:
+          nextRevisionTask.priority === 'high'
+            ? 'danger'
+            : nextRevisionTask.priority === 'medium'
+            ? 'warning'
+            : 'neutral',
+        buttonText: 'Start revision',
+        onClick: () => {
+          const act = (nextRevisionTask.suggested_activity || '').toLowerCase();
+          if (act.includes('tutor') || act.includes('ask')) {
+            navigate('/tutor', {
+              state: {
+                initialPrompt: `Help me with revision for "${nextRevisionTask.topic}": ${nextRevisionTask.title}`,
+              },
+            });
+          } else {
+            navigate('/quizzes', { state: { topic: nextRevisionTask.topic } });
+          }
+        },
+      };
+    }
+
+    if (weakestTopics.length > 0) {
+      const weakest = weakestTopics[0];
+      return {
+        title: `Practice "${weakest.topic}"`,
+        description: `Current accuracy is ${weakest.accuracy}%. Take a short quiz to reinforce concepts and close gaps.`,
+        badge: `${weakest.accuracy}% accuracy`,
+        badgeVariant: 'danger' as const,
+        buttonText: 'Practice quiz',
+        onClick: () => navigate('/quizzes', { state: { topic: weakest.topic } }),
+      };
+    }
+
+    return {
+      title: 'Ready for a new study session',
+      description: 'Upload study notes or run a diagnostic quiz to calibrate your knowledge profile.',
+      badge: 'Up to date',
+      badgeVariant: 'success' as const,
+      buttonText: 'Study materials',
+      onClick: () => navigate('/materials'),
+    };
+  }, [nextRevisionTask, weakestTopics, navigate]);
+
+  if (loading) {
+    return <LoadingSpinner label="Compiling learning analytics..." size="lg" className="py-20" />;
+  }
 
   return (
     <div className="space-y-6">
-      {error && <ErrorAlert message={error} onRetry={loadProgress} />}
+      {error && <ErrorAlert message={error} onRetry={loadData} />}
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="Total Materials"
+          label="Total materials"
           value={progress?.total_materials ?? 0}
-          icon={<FolderOpen className="w-5 h-5" />}
+          icon={<FolderOpen className="w-5 h-5 text-[var(--accent-primary)]" />}
           hint="Indexed study sources"
           onClick={() => navigate('/materials')}
         />
         <StatCard
-          label="Practice Attempts"
+          label="Practice attempts"
           value={progress?.total_attempts ?? 0}
-          icon={<CheckSquare className="w-5 h-5" />}
+          icon={<CheckSquare className="w-5 h-5 text-[var(--accent-primary)]" />}
           hint={`${progress?.questions_answered ?? 0} total questions answered`}
           onClick={() => navigate('/quizzes')}
         />
         <StatCard
-          label="Cumulative Accuracy"
+          label="Average Quiz Score"
           value={`${progress?.average_score ?? 0}%`}
-          icon={<TrendingUp className="w-5 h-5" />}
-          hint="Weighted across all quizzes"
+          icon={<TrendingUp className="w-5 h-5 text-[var(--accent-primary)]" />}
+          hint="Average across quiz attempts"
         />
         <StatCard
-          label="Verifications"
-          value={progress?.verifications?.length ?? 0}
-          icon={<Scale className="w-5 h-5" />}
-          hint="Diagnostic vs follow-up pairs"
+          label="Weak topics remaining"
+          value={weakTopicsCount}
+          icon={<AlertTriangle className="w-5 h-5 text-amber-500" />}
+          hint="Topics scoring below 50%"
         />
       </div>
 
-      {/* Topic Accuracy Chart (Real Recharts visualization) */}
+      {/* Next Best Action Card */}
+      <div className="p-5 rounded-2xl bg-[var(--accent-subtle)] border border-[var(--accent-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+        <div className="space-y-1.5 min-w-0">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--accent-primary)] flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Next best action</span>
+            </span>
+            <Badge variant={nextAction.badgeVariant as any} size="sm">
+              {nextAction.badge}
+            </Badge>
+          </div>
+          <h3 className="text-base font-semibold text-[var(--text-primary)]">
+            {nextAction.title}
+          </h3>
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed max-w-2xl">
+            {nextAction.description}
+          </p>
+        </div>
+
+        <Button
+          onClick={nextAction.onClick}
+          variant="primary"
+          size="sm"
+          className="shrink-0 self-start sm:self-center"
+          icon={<ArrowRight className="w-3.5 h-3.5" />}
+        >
+          {nextAction.buttonText}
+        </Button>
+      </div>
+
+      {/* Weakest Topics Horizontal Chart */}
       <Card>
         <CardHeader
-          title="Topic Accuracy & Mastery Breakdown"
-          subtitle="Real calibration strictly computed from objective student answers"
+          title="Weakest topics breakdown"
+          subtitle="Up to five topics needing the most focus, sorted from weakest to strongest"
+          action={
+            <div className="flex items-center gap-3 text-xs text-[var(--text-muted)]">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block" />
+                <span>Weak (&lt;50%)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />
+                <span>Developing (50–74%)</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
+                <span>Strong (≥75%)</span>
+              </div>
+            </div>
+          }
         />
         <CardContent>
-          {chartData.length === 0 ? (
+          {weakestTopics.length === 0 ? (
             <EmptyState
               icon={<TrendingUp className="w-6 h-6" />}
-              title="No chart data available"
-              description="Complete quizzes to generate topic performance charts."
-              actionLabel="Practice Quiz"
+              title="No topic performance data available"
+              description="Complete quizzes to generate topic performance charts and identify focus areas."
+              actionLabel="Practice quiz"
               onAction={() => navigate('/quizzes')}
             />
           ) : (
-            <div className="h-72 w-full pt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.15} />
+            <div className="w-full pt-2">
+              <ResponsiveContainer width="100%" height={Math.max(180, weakestTopics.length * 46 + 40)}>
+                <BarChart
+                  layout="vertical"
+                  data={weakestTopics}
+                  margin={{ top: 10, right: 30, left: 10, bottom: 10 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.15} />
                   <XAxis
-                    dataKey="name"
-                    tick={{ fontSize: 11, fill: 'currentColor' }}
-                    className="text-[var(--text-secondary)]"
+                    type="number"
+                    domain={[0, 100]}
+                    unit="%"
+                    tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
                   />
                   <YAxis
-                    domain={[0, 100]}
-                    tick={{ fontSize: 11, fill: 'currentColor' }}
-                    className="text-[var(--text-secondary)]"
-                    unit="%"
+                    type="category"
+                    dataKey="displayName"
+                    width={140}
+                    tick={{ fontSize: 12, fill: 'var(--text-primary)' }}
                   />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: 'var(--bg-card)',
-                      borderColor: 'var(--border-card)',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      color: 'var(--text-primary)',
-                      boxShadow: 'var(--card-shadow)',
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const data = payload[0].payload;
+                        return (
+                          <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-md text-xs space-y-1">
+                            <p className="font-semibold text-[var(--text-primary)]">{data.topic}</p>
+                            <p className="text-[var(--text-secondary)]">
+                              Accuracy: <span className="font-bold text-[var(--text-primary)]">{data.accuracy}%</span>
+                            </p>
+                            <p className="text-[var(--text-muted)] text-[11px]">
+                              {data.attempts} practice attempt(s)
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
                     }}
-                    formatter={(value: any) => [`${value}%`, 'Accuracy']}
                   />
-                  <Bar
-                    dataKey="accuracy"
-                    fill={accentConfig.primary}
-                    radius={[6, 6, 0, 0]}
-                    maxBarSize={50}
-                  />
+                  <Bar dataKey="accuracy" radius={[0, 6, 6, 0]} barSize={20}>
+                    {weakestTopics.map((entry, index) => {
+                      const color =
+                        entry.accuracy < 50
+                          ? '#EF4444' // Rose / Red for weak
+                          : entry.accuracy < 75
+                          ? '#F59E0B' // Amber for developing
+                          : '#10B981'; // Emerald for strong
+                      return <Cell key={`cell-${index}`} fill={color} />;
+                    })}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -183,7 +322,7 @@ export const ProgressAnalyticsScreen: React.FC = () => {
       {/* Assessment Verification Section */}
       <Card>
         <CardHeader
-          title="Measurable Assessment Verifications"
+          title="Assessment verifications"
           subtitle="Compare initial diagnostic quiz scores against subsequent follow-up assessments"
           action={
             <Button
@@ -192,7 +331,7 @@ export const ProgressAnalyticsScreen: React.FC = () => {
               size="sm"
               icon={<Plus className="w-3.5 h-3.5" />}
             >
-              New Verification
+              New verification
             </Button>
           }
         />
@@ -201,8 +340,8 @@ export const ProgressAnalyticsScreen: React.FC = () => {
             <EmptyState
               icon={<Scale className="w-6 h-6" />}
               title="No verification sessions initiated"
-              description="Initiate a verification to scientifically measure your score delta between diagnostic and follow-up practice."
-              actionLabel="Initiate Verification"
+              description="Initiate a verification to track score deltas between diagnostic and follow-up practice."
+              actionLabel="Initiate verification"
               onAction={() => setIsVerificationModalOpen(true)}
             />
           ) : (
@@ -218,12 +357,12 @@ export const ProgressAnalyticsScreen: React.FC = () => {
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-[var(--text-primary)]">{v.topic}</span>
+                        <span className="font-semibold text-sm text-[var(--text-primary)]">{v.topic}</span>
                         <Badge
                           variant={v.status === 'completed' ? 'success' : 'warning'}
                           size="sm"
                         >
-                          {v.status.replace('_', ' ')}
+                          {v.status === 'completed' ? 'Completed' : 'Awaiting follow-up'}
                         </Badge>
                       </div>
                       <p className="text-xs text-[var(--text-secondary)]">{v.message}</p>
@@ -249,10 +388,10 @@ export const ProgressAnalyticsScreen: React.FC = () => {
 
                       {hasScoreDiff && (
                         <div
-                          className={`px-3 py-1.5 rounded-lg font-bold text-xs ${
+                          className={`px-3 py-1.5 rounded-lg font-bold text-xs border ${
                             isPositive
-                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
-                              : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-300 dark:border-rose-800'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-rose-50 text-rose-700 border-rose-200'
                           }`}
                         >
                           {isPositive ? `+${v.score_difference}%` : `${v.score_difference}%`}
@@ -271,14 +410,14 @@ export const ProgressAnalyticsScreen: React.FC = () => {
       <Modal
         isOpen={isVerificationModalOpen}
         onClose={() => setIsVerificationModalOpen(false)}
-        title="Initiate Assessment Verification"
+        title="Initiate assessment verification"
         subtitle="Track measurable score gains on a specific curriculum topic"
         maxWidth="md"
       >
         <form onSubmit={handleCreateVerification} className="space-y-4">
           <div>
             <label className="block text-xs font-semibold text-[var(--text-primary)] mb-1.5">
-              Topic Name *
+              Topic name *
             </label>
             <input
               type="text"
@@ -309,7 +448,7 @@ export const ProgressAnalyticsScreen: React.FC = () => {
               loading={isSubmittingVerification}
               icon={<Scale className="w-4 h-4" />}
             >
-              Start Tracking
+              Start tracking
             </Button>
           </div>
         </form>

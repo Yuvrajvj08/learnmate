@@ -47,15 +47,15 @@ export const AuthScreen: React.FC = () => {
         </div>
 
         {/* Clear Backend Reality Notice */}
-        <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 text-amber-900 dark:text-amber-200 text-xs space-y-2">
-          <div className="flex items-center gap-2 font-bold text-amber-800 dark:text-amber-300">
+        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs space-y-2">
+          <div className="flex items-center gap-2 font-bold text-amber-800">
             <Info className="w-4 h-4 shrink-0" />
-            <span>Single-Student Local Development Mode</span>
+            <span>Single-student local development mode</span>
           </div>
           <p className="leading-relaxed">
             The LearnMate FastAPI backend currently operates in local student mode using the default context (<code>{student.id}</code>). All REST endpoints under <code>/api/v1</code> are open without auth cookies or bearer tokens.
           </p>
-          <p className="text-[11px] text-amber-800/85 dark:text-amber-300/85 italic">
+          <p className="text-[11px] text-amber-800/85 italic">
             Production multi-user authentication (Google OAuth 2.0 / JWT) requires a dedicated backend auth route and database user table.
           </p>
         </div>

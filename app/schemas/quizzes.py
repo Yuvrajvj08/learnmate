@@ -85,3 +85,15 @@ class QuizResultData(BaseModel):
     topic_performance: List[TopicPerformance]
     recommended_next_action: str
     updated_mastery: List[UpdatedMasteryIndicator]
+
+
+class QuizAttemptItem(BaseModel):
+    """Summary of a past quiz attempt for history listing."""
+    id: str
+    quiz_id: str
+    quiz_type: str
+    topic: str
+    total_questions: int
+    correct_count: int
+    score_percentage: float
+    submitted_at: datetime

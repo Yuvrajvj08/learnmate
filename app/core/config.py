@@ -7,7 +7,8 @@ class Settings(BaseSettings):
     """Application configuration settings loaded from environment or .env file."""
 
     GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-3.8-flash"
+    GEMINI_FALLBACK_MODEL: str = "gemini-3.5-flash-lite"
     DATABASE_URL: str = "sqlite:///./learnmate.db"
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173"
     MAX_PDF_PAGES: int = 20

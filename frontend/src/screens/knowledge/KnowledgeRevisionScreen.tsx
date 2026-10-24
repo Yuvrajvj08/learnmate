@@ -1,17 +1,18 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ListTodo,
   TrendingDown,
   AlertTriangle,
-  Sparkles,
-  CheckCircle2,
-  Clock,
   RotateCw,
-  Search,
-  Filter,
-  CheckSquare,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  MoreVertical,
   Bot,
+  CheckSquare,
+  Clock,
+  Sparkles,
 } from 'lucide-react';
 import { analyticsApi } from '@/api/analytics';
 import { revisionApi } from '@/api/revision';
@@ -39,8 +40,16 @@ export const KnowledgeRevisionScreen: React.FC = () => {
   const [knowledgeGaps, setKnowledgeGaps] = useState<KnowledgeGapItem[]>([]);
   const [misconceptions, setMisconceptions] = useState<MisconceptionItem[]>([]);
 
-  // Task filter
+  // Filtering & Sorting
   const [taskFilter, setTaskFilter] = useState<'all' | 'pending' | 'completed'>('all');
+  const [sortBy, setSortBy] = useState<'priority' | 'topic' | 'newest'>('priority');
+  const [groupBy, setGroupBy] = useState<'none' | 'priority' | 'topic'>('none');
+
+  // Expanded "Why?" cards state (set of task IDs)
+  const [expandedWhy, setExpandedWhy] = useState<Set<string>>(new Set());
+
+  // Active secondary menu task ID
+  const [openMenuTaskId, setOpenMenuTaskId] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -66,6 +75,13 @@ export const KnowledgeRevisionScreen: React.FC = () => {
     loadData();
   }, [loadData]);
 
+  // Close open dropdown menu on click outside
+  useEffect(() => {
+    const handleDocumentClick = () => setOpenMenuTaskId(null);
+    document.addEventListener('click', handleDocumentClick);
+    return () => document.removeEventListener('click', handleDocumentClick);
+  }, []);
+
   // Generate / Refresh Plan with AI
   const handleGeneratePlan = async () => {
     setIsRefreshingPlan(true);
@@ -80,7 +96,7 @@ export const KnowledgeRevisionScreen: React.FC = () => {
     }
   };
 
-  // Toggle task status
+  // Toggle task completion
   const handleUpdateTaskStatus = async (
     taskId: string,
     currentStatus: 'pending' | 'in_progress' | 'completed'
@@ -95,11 +111,264 @@ export const KnowledgeRevisionScreen: React.FC = () => {
     }
   };
 
-  const filteredTasks = revisionTasks.filter((t) => {
-    if (taskFilter === 'pending') return t.status !== 'completed';
-    if (taskFilter === 'completed') return t.status === 'completed';
-    return true;
-  });
+  const toggleWhy = (taskId: string) => {
+    setExpandedWhy((prev) => {
+      const next = new Set(prev);
+      if (next.has(taskId)) {
+        next.delete(taskId);
+      } else {
+        next.add(taskId);
+      }
+      return next;
+    });
+  };
+
+  const handleStartRevision = (task: RevisionTaskItem) => {
+    const activity = (task.suggested_activity || '').toLowerCase();
+    if (activity.includes('tutor') || activity.includes('ask') || activity.includes('consult')) {
+      navigate('/tutor', {
+        state: {
+          initialPrompt: `I'm working on my revision task for "${task.topic}": ${task.title}. ${task.suggested_activity}`,
+        },
+      });
+    } else {
+      navigate('/quizzes', { state: { topic: task.topic } });
+    }
+  };
+
+  // Filtered and sorted tasks
+  const processedTasks = useMemo(() => {
+    const filtered = revisionTasks.filter((t) => {
+      if (taskFilter === 'pending') return t.status !== 'completed';
+      if (taskFilter === 'completed') return t.status === 'completed';
+      return true;
+    });
+
+    const priorityWeight: Record<string, number> = { high: 1, medium: 2, low: 3 };
+
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'priority') {
+        const pA = priorityWeight[a.priority] || 4;
+        const pB = priorityWeight[b.priority] || 4;
+        if (pA !== pB) return pA - pB;
+        return a.title.localeCompare(b.title);
+      }
+      if (sortBy === 'topic') {
+        return (a.topic || '').localeCompare(b.topic || '');
+      }
+      // Newest
+      return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+    });
+  }, [revisionTasks, taskFilter, sortBy]);
+
+  // Grouped tasks map
+  const groupedTasks = useMemo(() => {
+    if (groupBy === 'none') {
+      return { 'All tasks': processedTasks };
+    }
+    if (groupBy === 'priority') {
+      const groups: Record<string, RevisionTaskItem[]> = {
+        'High priority': [],
+        'Medium priority': [],
+        'Low priority': [],
+      };
+      processedTasks.forEach((t) => {
+        const key =
+          t.priority === 'high'
+            ? 'High priority'
+            : t.priority === 'medium'
+            ? 'Medium priority'
+            : 'Low priority';
+        groups[key].push(t);
+      });
+      return groups;
+    }
+    // Group by topic
+    const groups: Record<string, RevisionTaskItem[]> = {};
+    processedTasks.forEach((t) => {
+      const key = t.topic || 'General';
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(t);
+    });
+    return groups;
+  }, [processedTasks, groupBy]);
+
+  const renderTaskCard = (task: RevisionTaskItem) => {
+    const isCompleted = task.status === 'completed';
+    const isWhyExpanded = expandedWhy.has(task.id);
+    const isMenuOpen = openMenuTaskId === task.id;
+
+    // Short reason preview (first sentence or truncated at 90 chars)
+    const shortReason =
+      task.reason.length > 90
+        ? `${task.reason.slice(0, 90).trim()}...`
+        : task.reason;
+
+    return (
+      <div
+        key={task.id}
+        className={`p-4 rounded-xl border transition-all flex flex-col sm:flex-row items-start justify-between gap-4 ${
+          isCompleted
+            ? 'bg-[var(--bg-secondary)]/50 border-[var(--border-subtle)] opacity-70'
+            : 'bg-[var(--bg-card)] border-[var(--border-card)] hover:border-[var(--accent-primary)]/40 shadow-2xs'
+        }`}
+      >
+        {/* Left: Checkbox & Content */}
+        <div className="flex items-start gap-3.5 min-w-0 flex-1">
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={isCompleted}
+            aria-label={isCompleted ? `Mark "${task.title}" as pending` : `Mark "${task.title}" as completed`}
+            onClick={() => handleUpdateTaskStatus(task.id, task.status as any)}
+            className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center transition-colors shrink-0 cursor-pointer ${
+              isCompleted
+                ? 'bg-emerald-600 border-emerald-600 text-white'
+                : 'border-slate-300 hover:border-[var(--accent-primary)] bg-white'
+            }`}
+          >
+            {isCompleted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+          </button>
+
+          <div className="min-w-0 space-y-1.5 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`text-sm font-semibold text-[var(--text-primary)] ${
+                  isCompleted ? 'line-through text-[var(--text-muted)]' : ''
+                }`}
+              >
+                {task.title}
+              </span>
+              <Badge
+                variant={
+                  task.priority === 'high'
+                    ? 'danger'
+                    : task.priority === 'medium'
+                    ? 'warning'
+                    : 'neutral'
+                }
+                size="sm"
+              >
+                {task.priority === 'high'
+                  ? 'High priority'
+                  : task.priority === 'medium'
+                  ? 'Medium priority'
+                  : 'Low priority'}
+              </Badge>
+              {task.topic && (
+                <span className="text-xs px-2 py-0.5 rounded-md bg-[var(--bg-secondary)] text-[var(--text-secondary)] font-medium border border-[var(--border-subtle)]">
+                  {task.topic}
+                </span>
+              )}
+            </div>
+
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+              {task.suggested_activity}
+            </p>
+
+            {/* Expandable Why section */}
+            <div className="pt-0.5">
+              {!isWhyExpanded ? (
+                <div className="flex items-center gap-2 text-xs text-[var(--text-muted)]">
+                  <span className="truncate max-w-md">{shortReason}</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleWhy(task.id)}
+                    className="text-[var(--accent-primary)] hover:underline font-medium inline-flex items-center gap-0.5 shrink-0 cursor-pointer"
+                  >
+                    <span>Why?</span>
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-subtle)] text-xs text-[var(--text-secondary)] space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-[var(--text-primary)]">Why this was assigned</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleWhy(task.id)}
+                      className="text-[var(--accent-primary)] hover:underline font-medium inline-flex items-center gap-0.5 cursor-pointer"
+                    >
+                      <span>Collapse</span>
+                      <ChevronUp className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <p className="leading-relaxed">{task.reason}</p>
+                </div>
+              )}
+            </div>
+
+            {task.due_date && (
+              <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] pt-0.5">
+                <Clock className="w-3 h-3" />
+                <span>Due: {task.due_date}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right: Single Primary Action + Small Overflow Menu */}
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+          <Button
+            onClick={() => handleStartRevision(task)}
+            variant="primary"
+            size="sm"
+          >
+            Start revision
+          </Button>
+
+          <div className="relative">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setOpenMenuTaskId(isMenuOpen ? null : task.id);
+              }}
+              className="p-1.5 rounded-lg border border-[var(--border-card)] hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] transition-colors cursor-pointer"
+              title="More actions"
+              aria-label="More actions"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+
+            {isMenuOpen && (
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="absolute right-0 top-full mt-1.5 w-44 rounded-xl bg-[var(--bg-card)] border border-[var(--border-card)] shadow-md py-1 z-20"
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenMenuTaskId(null);
+                    navigate('/quizzes', { state: { topic: task.topic } });
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] flex items-center gap-2 cursor-pointer"
+                >
+                  <CheckSquare className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                  <span>Practice quiz</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpenMenuTaskId(null);
+                    navigate('/tutor', {
+                      state: {
+                        initialPrompt: `Help me understand "${task.topic}": ${task.title}.`,
+                      },
+                    });
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] flex items-center gap-2 cursor-pointer"
+                >
+                  <Bot className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+                  <span>Ask tutor</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6">
@@ -110,43 +379,43 @@ export const KnowledgeRevisionScreen: React.FC = () => {
         <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-card)] shrink-0 shadow-2xs">
           <button
             onClick={() => setActiveTab('revision')}
-            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'revision'
                 ? 'bg-[var(--accent-primary)] text-white shadow-xs'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             <ListTodo className="w-3.5 h-3.5" />
-            <span>Revision Plan</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20">
+            <span>Revision plan</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/15 font-bold">
               {revisionTasks.length}
             </span>
           </button>
           <button
             onClick={() => setActiveTab('gaps')}
-            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'gaps'
                 ? 'bg-[var(--accent-primary)] text-white shadow-xs'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             <TrendingDown className="w-3.5 h-3.5" />
-            <span>Knowledge Gap Map</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20">
+            <span>Knowledge gap map</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/15 font-bold">
               {knowledgeGaps.length}
             </span>
           </button>
           <button
             onClick={() => setActiveTab('misconceptions')}
-            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 ${
+            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all flex items-center gap-2 cursor-pointer ${
               activeTab === 'misconceptions'
                 ? 'bg-[var(--accent-primary)] text-white shadow-xs'
                 : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
             }`}
           >
             <AlertTriangle className="w-3.5 h-3.5" />
-            <span>Diagnosed Misconceptions</span>
-            <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/20">
+            <span>Diagnosed misconceptions</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-black/15 font-bold">
               {misconceptions.length}
             </span>
           </button>
@@ -160,7 +429,7 @@ export const KnowledgeRevisionScreen: React.FC = () => {
             size="sm"
             icon={<RotateCw className="w-3.5 h-3.5" />}
           >
-            Regenerate Plan from Quiz History
+            Regenerate plan
           </Button>
         )}
       </div>
@@ -171,28 +440,59 @@ export const KnowledgeRevisionScreen: React.FC = () => {
         /* Tab 1: Revision Plan */
         <Card>
           <CardHeader
-            title="Adaptive Revision Plan"
+            title="Adaptive revision plan"
             subtitle="Prioritized actions based on recent performance and diagnosed weakness"
             action={
-              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-card)]">
-                {(['all', 'pending', 'completed'] as const).map((filter) => (
-                  <button
-                    key={filter}
-                    onClick={() => setTaskFilter(filter)}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-lg capitalize transition-colors ${
-                      taskFilter === filter
-                        ? 'bg-[var(--bg-card)] text-[var(--accent-primary)] shadow-2xs'
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
-                    }`}
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Status filter */}
+                <div className="flex items-center gap-1 p-1 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-card)]">
+                  {(['all', 'pending', 'completed'] as const).map((filter) => (
+                    <button
+                      key={filter}
+                      onClick={() => setTaskFilter(filter)}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-lg capitalize transition-colors cursor-pointer ${
+                        taskFilter === filter
+                          ? 'bg-[var(--bg-card)] text-[var(--accent-primary)] shadow-2xs font-semibold'
+                          : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                      }`}
+                    >
+                      {filter}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Sort selector */}
+                <div className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                  <span className="text-[11px] font-medium text-[var(--text-muted)]">Sort:</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="px-2.5 py-1 rounded-lg text-xs bg-[var(--bg-secondary)] border border-[var(--border-card)] text-[var(--text-primary)] focus:outline-hidden"
                   >
-                    {filter}
-                  </button>
-                ))}
+                    <option value="priority">Priority</option>
+                    <option value="topic">Topic (A–Z)</option>
+                    <option value="newest">Newest</option>
+                  </select>
+                </div>
+
+                {/* Group selector */}
+                <div className="flex items-center gap-1.5 text-xs text-[var(--text-secondary)]">
+                  <span className="text-[11px] font-medium text-[var(--text-muted)]">Group:</span>
+                  <select
+                    value={groupBy}
+                    onChange={(e) => setGroupBy(e.target.value as any)}
+                    className="px-2.5 py-1 rounded-lg text-xs bg-[var(--bg-secondary)] border border-[var(--border-card)] text-[var(--text-primary)] focus:outline-hidden"
+                  >
+                    <option value="none">None</option>
+                    <option value="priority">By priority</option>
+                    <option value="topic">By topic</option>
+                  </select>
+                </div>
               </div>
             }
           />
           <CardContent>
-            {filteredTasks.length === 0 ? (
+            {processedTasks.length === 0 ? (
               <EmptyState
                 icon={<ListTodo className="w-6 h-6" />}
                 title={taskFilter === 'completed' ? 'No completed tasks' : 'No revision tasks found'}
@@ -201,93 +501,27 @@ export const KnowledgeRevisionScreen: React.FC = () => {
                     ? 'Complete pending tasks above to see them in this view.'
                     : 'Take a practice quiz to generate personalized recommendations.'
                 }
-                actionLabel="Practice Quiz"
+                actionLabel="Practice quiz"
                 onAction={() => navigate('/quizzes')}
               />
             ) : (
-              <div className="space-y-3">
-                {filteredTasks.map((task) => {
-                  const isCompleted = task.status === 'completed';
+              <div className="space-y-6">
+                {Object.entries(groupedTasks).map(([groupTitle, tasks]) => {
+                  if (tasks.length === 0) return null;
                   return (
-                    <div
-                      key={task.id}
-                      className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row items-start justify-between gap-4 ${
-                        isCompleted
-                          ? 'bg-[var(--bg-secondary)]/40 border-[var(--border-card)] opacity-65'
-                          : 'bg-[var(--bg-card)] border-[var(--border-card)] hover:border-[var(--accent-primary)]'
-                      }`}
-                    >
-                      <div className="flex items-start gap-3 min-w-0 flex-1">
-                        <button
-                          onClick={() => handleUpdateTaskStatus(task.id, task.status as any)}
-                          className="mt-0.5 text-slate-400 hover:text-[var(--accent-primary)] transition-colors shrink-0 cursor-pointer"
-                          title={isCompleted ? 'Mark Pending' : 'Mark Completed'}
-                        >
-                          <CheckCircle2
-                            className={`w-5 h-5 ${
-                              isCompleted
-                                ? 'text-emerald-500 fill-emerald-500/20'
-                                : 'text-slate-400'
-                            }`}
-                          />
-                        </button>
-
-                        <div className="min-w-0 space-y-1">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span
-                              className={`text-sm font-semibold text-[var(--text-primary)] ${
-                                isCompleted ? 'line-through text-[var(--text-secondary)]' : ''
-                              }`}
-                            >
-                              {task.title}
-                            </span>
-                            <Badge
-                              variant={
-                                task.priority === 'high'
-                                  ? 'danger'
-                                  : task.priority === 'medium'
-                                  ? 'warning'
-                                  : 'neutral'
-                              }
-                              size="sm"
-                            >
-                              {task.priority.toUpperCase()} PRIORITY
-                            </Badge>
-                          </div>
-
-                          <p className="text-xs text-[var(--text-secondary)] font-medium">
-                            {task.suggested_activity}
-                          </p>
-
-                          <div className="p-2 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-subtle)] text-[11px] text-[var(--text-secondary)]">
-                            <span className="font-semibold text-[var(--text-primary)]">Why this was assigned: </span>
-                            {task.reason}
-                          </div>
-
-                          <div className="flex items-center gap-3 text-[11px] text-[var(--text-muted)] pt-1">
-                            <span>Topic: {task.topic}</span>
-                            {task.due_date && <span>• Due: {task.due_date}</span>}
-                          </div>
+                    <div key={groupTitle} className="space-y-3">
+                      {groupBy !== 'none' && (
+                        <div className="flex items-center gap-2 pb-1 border-b border-[var(--border-subtle)]">
+                          <h4 className="text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+                            {groupTitle}
+                          </h4>
+                          <span className="text-[11px] text-[var(--text-muted)] font-medium">
+                            ({tasks.length})
+                          </span>
                         </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                        <Button
-                          onClick={() => navigate('/quizzes', { state: { topic: task.topic } })}
-                          variant="ghost"
-                          size="sm"
-                          icon={<CheckSquare className="w-3.5 h-3.5" />}
-                        >
-                          Practice
-                        </Button>
-                        <Button
-                          onClick={() => navigate('/tutor')}
-                          variant="outline"
-                          size="sm"
-                          icon={<Bot className="w-3.5 h-3.5" />}
-                        >
-                          Ask Tutor
-                        </Button>
+                      )}
+                      <div className="space-y-3">
+                        {tasks.map(renderTaskCard)}
                       </div>
                     </div>
                   );
@@ -300,7 +534,7 @@ export const KnowledgeRevisionScreen: React.FC = () => {
         /* Tab 2: Knowledge Gap Map */
         <Card>
           <CardHeader
-            title="Topic Mastery & Knowledge Gap Map"
+            title="Topic mastery & knowledge gap map"
             subtitle="Real calculations derived from student attempt history"
           />
           <CardContent>
@@ -309,7 +543,7 @@ export const KnowledgeRevisionScreen: React.FC = () => {
                 icon={<TrendingDown className="w-6 h-6" />}
                 title="No topic gaps mapped yet"
                 description="Complete quizzes to let LearnMate identify your strengths and blind spots."
-                actionLabel="Take a Quiz"
+                actionLabel="Take a quiz"
                 onAction={() => navigate('/quizzes')}
               />
             ) : (
@@ -321,7 +555,7 @@ export const KnowledgeRevisionScreen: React.FC = () => {
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <h4 className="text-base font-bold text-[var(--text-primary)]">
+                        <h4 className="text-sm font-semibold text-[var(--text-primary)]">
                           {gap.topic}
                         </h4>
                         <p className="text-xs text-[var(--text-secondary)] mt-0.5">
@@ -340,14 +574,20 @@ export const KnowledgeRevisionScreen: React.FC = () => {
                         }
                         size="sm"
                       >
-                        {gap.status.replace('_', ' ')}
+                        {gap.status === 'weak'
+                          ? 'Weak'
+                          : gap.status === 'developing'
+                          ? 'Developing'
+                          : gap.status === 'strong'
+                          ? 'Strong'
+                          : gap.status.replace('_', ' ')}
                       </Badge>
                     </div>
 
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs">
-                        <span className="text-[var(--text-secondary)]">Accuracy:</span>
-                        <span className="font-bold text-[var(--text-primary)]">{gap.accuracy}%</span>
+                        <span className="text-[var(--text-secondary)]">Accuracy</span>
+                        <span className="font-semibold text-[var(--text-primary)]">{gap.accuracy}%</span>
                       </div>
                       <div className="w-full bg-[var(--bg-secondary)] h-2 rounded-full overflow-hidden">
                         <div
@@ -365,19 +605,19 @@ export const KnowledgeRevisionScreen: React.FC = () => {
 
                     <div className="p-3 rounded-xl bg-[var(--bg-secondary)] text-xs text-[var(--text-secondary)] space-y-1">
                       <span className="font-semibold text-[var(--text-primary)] text-[11px] uppercase tracking-wider block">
-                        Actionable Recommendation:
+                        Actionable recommendation
                       </span>
-                      <p>{gap.recommended_action}</p>
+                      <p className="leading-relaxed">{gap.recommended_action}</p>
                     </div>
 
                     <div className="pt-2 flex justify-end gap-2">
                       <Button
                         onClick={() => navigate('/quizzes', { state: { topic: gap.topic } })}
-                        variant="outline"
+                        variant="primary"
                         size="sm"
                         icon={<CheckSquare className="w-3.5 h-3.5" />}
                       >
-                        Targeted Quiz
+                        Targeted quiz
                       </Button>
                     </div>
                   </div>
@@ -390,7 +630,7 @@ export const KnowledgeRevisionScreen: React.FC = () => {
         /* Tab 3: Diagnosed Misconceptions */
         <Card>
           <CardHeader
-            title="Diagnosed Student Misconceptions"
+            title="Diagnosed student misconceptions"
             subtitle="Grounded strictly in incorrect answers from quiz attempts"
           />
           <CardContent>
@@ -399,7 +639,7 @@ export const KnowledgeRevisionScreen: React.FC = () => {
                 icon={<AlertTriangle className="w-6 h-6" />}
                 title="No diagnosed misconceptions"
                 description="When you select plausible distractors in diagnostic quizzes, LearnMate pinpoints the underlying conceptual confusion here."
-                actionLabel="Take Diagnostic Quiz"
+                actionLabel="Take diagnostic quiz"
                 onAction={() => navigate('/quizzes')}
               />
             ) : (
@@ -407,19 +647,19 @@ export const KnowledgeRevisionScreen: React.FC = () => {
                 {misconceptions.map((m) => (
                   <div
                     key={m.id}
-                    className="p-5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 space-y-3"
+                    className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-3"
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-amber-800">
                             Topic: {m.topic}
                           </span>
                           <Badge variant="warning" size="sm">
                             Confidence: {m.confidence}
                           </Badge>
                         </div>
-                        <h4 className="text-sm font-bold text-[var(--text-primary)] mt-1">
+                        <h4 className="text-sm font-semibold text-[var(--text-primary)] mt-1">
                           {m.misconception_text}
                         </h4>
                       </div>
@@ -429,34 +669,40 @@ export const KnowledgeRevisionScreen: React.FC = () => {
                     <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-card)] space-y-1.5 text-xs">
                       <div>
                         <span className="font-semibold text-[var(--text-muted)] text-[11px] uppercase">
-                          Evidence Question:
+                          Evidence question:
                         </span>
                         <p className="font-medium text-[var(--text-primary)] mt-0.5">{m.evidence_question}</p>
                       </div>
                       <div>
                         <span className="font-semibold text-[var(--text-muted)] text-[11px] uppercase">
-                          Observed Answer:
+                          Observed answer:
                         </span>
-                        <p className="font-semibold text-rose-600 dark:text-rose-400 mt-0.5">{m.evidence_answer}</p>
+                        <p className="font-semibold text-rose-600 mt-0.5">{m.evidence_answer}</p>
                       </div>
                     </div>
 
                     {/* Remediation Practice */}
                     <div className="p-3 rounded-xl bg-[var(--bg-card)] border border-[var(--border-card)] text-xs space-y-1">
-                      <span className="font-bold text-[var(--accent-primary)] text-[11px] uppercase tracking-wider block">
-                        Suggested Remediation:
+                      <span className="font-semibold text-[var(--accent-primary)] text-[11px] uppercase tracking-wider block">
+                        Suggested remediation
                       </span>
-                      <p className="text-[var(--text-secondary)]">{m.suggested_practice}</p>
+                      <p className="text-[var(--text-secondary)] leading-relaxed">{m.suggested_practice}</p>
                     </div>
 
                     <div className="pt-2 flex justify-end gap-2">
                       <Button
-                        onClick={() => navigate('/tutor')}
+                        onClick={() =>
+                          navigate('/tutor', {
+                            state: {
+                              initialPrompt: `Help me understand why this is a misconception in ${m.topic}: "${m.misconception_text}"`,
+                            },
+                          })
+                        }
                         variant="outline"
                         size="sm"
                         icon={<Bot className="w-3.5 h-3.5" />}
                       >
-                        Ask Tutor About This
+                        Ask tutor
                       </Button>
                       <Button
                         onClick={() => navigate('/quizzes', { state: { topic: m.topic } })}
@@ -464,7 +710,7 @@ export const KnowledgeRevisionScreen: React.FC = () => {
                         size="sm"
                         icon={<CheckSquare className="w-3.5 h-3.5" />}
                       >
-                        Retest Concept
+                        Retest concept
                       </Button>
                     </div>
                   </div>
